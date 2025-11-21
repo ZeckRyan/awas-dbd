@@ -1,0 +1,24 @@
+stages:
+  - deploy
+
+deploy_to_vps:
+  stage: deploy
+  only:
+    - main
+  before_script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install -y openssh-client )'
+    - echo "$SSH_PRIVATE_KEY_BASE64" | base64 -d > /tmp/id_rsa
+    - chmod 600 /tmp/id_rsa
+    - eval $(ssh-agent -s)
+    - ssh-add /tmp/id_rsa
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+  script:
+    - ssh "$DEPLOY_USER@$DEPLOY_HOST" "
+      cd $DEPLOY_PATH &&
+      git pull origin main &&
+      docker compose build --no-cache &&
+      docker compose up -d --remove-orphans &&
+      docker image prune -f
+      "
