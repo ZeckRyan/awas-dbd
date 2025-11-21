@@ -1,0 +1,19 @@
+@import url('https://fonts.cdnfonts.com/css/general-sans');
+@import "tailwindcss";
+@import 'leaflet/dist/leaflet.css';
+
+*{
+    scroll-behavior: smooth;
+    scroll-margin-top: 50px;
+    font-family: 'General Sans', sans-serif;
+}
+
+.lucide-icon {
+    width: 24px;
+    height: 24px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
