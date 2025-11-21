@@ -1,0 +1,6 @@
+services:
+  app:
+    build: .
+    ports:
+      - "5050:3000"
+    restart: always
