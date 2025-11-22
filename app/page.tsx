@@ -65,88 +65,200 @@ export default function Home() {
       <Navbar active="home" />
 
       <div style={{ top: 0, marginTop: 80 }}>
-        <section className="bg-gray-50">
-          <div className="mx-auto max-w-screen-xl px-4 py-16 lg:py-24 lg:flex lg:h-auto lg:min-h-[70vh] lg:items-center">
-            <div className="mx-auto max-w-xl text-center">
-              <div className="flex flex-col text-3xl font-extrabold sm:text-5xl">
-                <span>Deteksi DBD</span>
-                <span className="text-red-700">lebih dini!</span>
+        <section className="relative bg-white overflow-hidden min-h-[90vh]">
+          {/* Subtle Background Pattern */}
+          <div className="absolute inset-0 opacity-5">
+            <svg className="w-full h-full" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
+                  <circle cx="30" cy="30" r="2" fill="#dc2626"/>
+                </pattern>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#grid)"/>
+            </svg>
+          </div>
+          
+          <div className="relative mx-auto max-w-screen-xl px-4 py-16 lg:py-24">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center min-h-[70vh]">
+              
+              {/* Left Content */}
+              <div className="text-left space-y-6 lg:pr-8">
+                <div className="inline-flex items-center gap-2 bg-red-50 border border-red-200 px-4 py-2 rounded-full text-red-600 text-sm font-medium">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  Deteksi Dini. Akurat. Terpercaya.
+                </div>
+                
+                <div className="space-y-4">
+                  <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 leading-tight">
+                    <span className="block">Deteksi DBD</span>
+                    <span className="block text-red-600">lebih dini!</span>
+                  </h1>
+                  
+                  <p className="text-xl text-gray-600 leading-relaxed max-w-lg">
+                    Sistem AI canggih untuk membantu deteksi Demam Berdarah Dengue (DBD) 
+                    lebih dini dengan akurasi tinggi
+                  </p>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                  <Link
+                    className="group flex items-center justify-center gap-3 bg-red-600 text-white px-8 py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl hover:bg-red-700 transform hover:scale-105 transition-all duration-300"
+                    href="/form"
+                  >
+                    <svg
+                      className="w-5 h-5 group-hover:rotate-12 transition-transform"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    Mulai Pemeriksaan
+                  </Link>
+                  
+                  {user ? (
+                    <Link
+                      className="group flex items-center justify-center gap-3 bg-white border-2 border-red-200 text-red-600 px-8 py-4 rounded-xl font-semibold hover:bg-red-50 transform hover:scale-105 transition-all duration-300"
+                      href="/history"
+                    >
+                      <svg
+                        className="w-5 h-5 group-hover:rotate-12 transition-transform"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                      Lihat Riwayat
+                    </Link>
+                  ) : (
+                    <Link
+                      className="group flex items-center justify-center gap-3 bg-white border-2 border-red-200 text-red-600 px-8 py-4 rounded-xl font-semibold hover:bg-red-50 transform hover:scale-105 transition-all duration-300"
+                      href="/login"
+                    >
+                      <svg
+                        className="w-5 h-5 group-hover:translate-x-1 transition-transform"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+                      </svg>
+                      Masuk
+                    </Link>
+                  )}
+                </div>
+
+                {/* Stats */}
+                <div className="flex gap-8 pt-8">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-red-600">98%</div>
+                    <div className="text-gray-500 text-sm">Akurasi</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-red-600">5 Menit</div>
+                    <div className="text-gray-500 text-sm">Hasil Cepat</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-red-600">24/7</div>
+                    <div className="text-gray-500 text-sm">Tersedia</div>
+                  </div>
+                </div>
               </div>
 
-              <p className="mt-4 sm:text-xl/relaxed">
-                Sistem ini dapat membantu Anda untuk mendeteksi Demam Berdarah
-                Dengue (DBD) lebih dini dengan AI
-              </p>
-
-              <div className="mt-8 flex flex-wrap justify-center gap-4">
-                <Link
-                  className="flex gap-x-2 rounded bg-red-700 px-12 py-3 text-sm font-medium text-white shadow hover:bg-red-800 focus:outline-none focus:ring active:bg-red-500 sm:w-auto"
-                  href="/form"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="w-5 h-5 text-white"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M3 7V5a2 2 0 0 1 2-2h2" />
-                    <path d="M17 3h2a2 2 0 0 1 2 2v2" />
-                    <path d="M21 17v2a2 2 0 0 1-2 2h-2" />
-                    <path d="M7 21H5a2 2 0 0 1-2-2v-2" />
-                    <circle cx="12" cy="12" r="3" />
-                    <path d="m16 16-1.9-1.9" />
-                  </svg>
-                  Periksa
-                </Link>
-                
-                {user ? (
-                  <Link
-                    className="flex gap-x-2 rounded bg-white border-2 border-red-700 px-12 py-3 text-sm font-medium text-red-700 shadow hover:bg-red-50 focus:outline-none focus:ring active:bg-red-100 sm:w-auto"
-                    href="/history"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="w-5 h-5"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
-                      <path d="M21 3v5h-5" />
-                      <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
-                      <path d="M8 16H3v5" />
+              {/* Right Illustration - Mosquito & Medical Theme */}
+              <div className="relative lg:pl-8">
+                <div className="relative">
+                  {/* Main Background Circle */}
+                  <div className="relative w-96 h-96 mx-auto">
+                    <div className="absolute inset-0 bg-gradient-to-br from-red-500 to-red-600 rounded-full shadow-2xl opacity-10"></div>
+                    <div className="absolute inset-4 bg-gradient-to-br from-red-400 to-red-500 rounded-full opacity-20"></div>
+                    
+                    {/* Main Mosquito Illustration */}
+                    <div className="absolute inset-16 flex items-center justify-center">
+                      <div className="text-red-500 transform rotate-12 animate-pulse">
+                        <svg className="w-48 h-48" fill="currentColor" viewBox="0 0 512 512">
+                          <path d="M463.1 474.7c-4.2-4.7-9.6-7.2-15.8-7.2s-11.6 2.5-15.8 7.2l-55.5 62.1c-8.4 9.4-8.4 23.7 0 33.1 8.4 9.4 22.1 9.4 30.5 0l55.5-62.1c8.4-9.4 8.4-23.7 0-33.1zM256 320c-88.4 0-160-71.6-160-160S167.6 0 256 0s160 71.6 160 160-71.6 160-160 160zm0-288c-70.7 0-128 57.3-128 128s57.3 128 128 128 128-57.3 128-128S326.7 32 256 32z"/>
+                          <circle cx="256" cy="160" r="48"/>
+                          <path d="M432 160c0-97.2-78.8-176-176-176S80 62.8 80 160c0 41.8 14.6 80.1 39 110.1L256 416l137-145.9c24.4-30 39-68.3 39-110.1z"/>
+                        </svg>
+                      </div>
+                    </div>
+                    
+                    {/* Medical Icons around mosquito */}
+                    <div className="absolute top-8 left-1/2 transform -translate-x-1/2 text-red-400 animate-bounce">
+                      <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                      </svg>
+                    </div>
+                    
+                    {/* Blood drop */}
+                    <div className="absolute top-16 right-12 text-red-500 animate-pulse">
+                      <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2s-8 8.5-8 12a8 8 0 1 0 16 0c0-3.5-8-12-8-12z"/>
+                      </svg>
+                    </div>
+                    
+                    {/* Temperature/thermometer */}
+                    <div className="absolute bottom-16 left-12 text-red-400 animate-pulse" style={{ animationDelay: '0.5s' }}>
+                      <svg className="w-10 h-10" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M15 13V5a3 3 0 0 0-6 0v8a5 5 0 1 0 6 0zM12 4a1 1 0 0 1 1 1v7.5a3 3 0 1 1-2 0V5a1 1 0 0 1 1-1z"/>
+                      </svg>
+                    </div>
+                    
+                    {/* Medical cross */}
+                    <div className="absolute bottom-8 right-16 text-red-300 animate-pulse" style={{ animationDelay: '1s' }}>
+                      <svg className="w-10 h-10" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                      </svg>
+                    </div>
+                    
+                    {/* Virus particle */}
+                    <div className="absolute top-20 left-8 text-red-300 animate-bounce" style={{ animationDelay: '1.5s' }}>
+                      <div className="relative w-8 h-8 bg-current rounded-full opacity-60">
+                        <div className="absolute -top-1 -left-1 w-2 h-2 bg-current rounded-full"></div>
+                        <div className="absolute -top-1 -right-1 w-2 h-2 bg-current rounded-full"></div>
+                        <div className="absolute -bottom-1 -left-1 w-2 h-2 bg-current rounded-full"></div>
+                        <div className="absolute -bottom-1 -right-1 w-2 h-2 bg-current rounded-full"></div>
+                      </div>
+                    </div>
+                    
+                    {/* Heart pulse */}
+                    <div className="absolute bottom-20 right-8 text-red-400 animate-pulse" style={{ animationDelay: '2s' }}>
+                      <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                      </svg>
+                    </div>
+                    
+                    {/* DNA strand */}
+                    <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-red-200 animate-spin" style={{ animationDuration: '10s' }}>
+                      <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M4 4h4v4H4V4zm6 0h4v4h-4V4zm6 0h4v4h-4V4zM4 10h4v4H4v-4zm6 0h4v4h-4v-4zm6 0h4v4h-4v-4zM4 16h4v4H4v-4zm6 0h4v4h-4v-4zm6 0h4v4h-4v-4z"/>
+                      </svg>
+                    </div>
+                  </div>
+                  
+                  {/* Floating decorative elements */}
+                  <div className="absolute -top-4 left-1/4 text-red-300 animate-float">
+                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="3"/>
                     </svg>
-                    Riwayat
-                  </Link>
-                ) : (
-                  <Link
-                    className="flex gap-x-2 rounded bg-white border-2 border-red-700 px-12 py-3 text-sm font-medium text-red-700 shadow hover:bg-red-50 focus:outline-none focus:ring active:bg-red-100 sm:w-auto"
-                    href="/login"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="w-5 h-5"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
-                      <polyline points="10 17 15 12 10 7" />
-                      <line x1="15" x2="3" y1="12" y2="12" />
+                  </div>
+                  
+                  <div className="absolute -right-4 top-1/3 text-red-200 animate-bounce" style={{ animationDelay: '0.7s' }}>
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="2"/>
                     </svg>
-                    Masuk
-                  </Link>
-                )}
+                  </div>
+                  
+                  <div className="absolute -left-6 bottom-1/4 text-red-300 animate-pulse" style={{ animationDelay: '1.3s' }}>
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="2.5"/>
+                    </svg>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -366,18 +478,7 @@ export default function Home() {
               <p className="text-gray-400 mb-4">
                 Sistem deteksi dini Demam Berdarah Dengue berbasis AI untuk membantu masyarakat Indonesia mendapatkan diagnosa lebih cepat dan akurat.
               </p>
-              <div className="flex gap-4">
-                <a
-                  href="https://github.com/aliepratama/dengue-checker-nextjs"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-gray-400 hover:text-white transition-colors"
-                >
-                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                  </svg>
-                </a>
-              </div>
+             
             </div>
 
             {/* Column 2: Quick Links */}
