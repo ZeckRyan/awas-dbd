@@ -6,6 +6,7 @@ import Link from 'next/link'
 import Navbar from '../components/Navbar'
 import LoginForm from '../components/LoginForm'
 import { createClient } from '../../utils/supabase/client'
+import { getRedirectUrl } from '../../utils/get-base-url'
 
 function LoginContent() {
   const router = useRouter()
@@ -41,7 +42,7 @@ function LoginContent() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: getRedirectUrl(),
         },
       })
 
