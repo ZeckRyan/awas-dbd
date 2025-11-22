@@ -213,7 +213,7 @@ export default function PreventionChecklistPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Navbar active="home" />
+        <Navbar active="checklist" />
         <div className="pt-20 flex items-center justify-center min-h-screen">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-700"></div>
         </div>
@@ -224,7 +224,7 @@ export default function PreventionChecklistPage() {
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Navbar active="home" />
+        <Navbar active="checklist" />
         <div className="pt-20">
           <div className="max-w-2xl mx-auto px-4 py-16 text-center">
             <div className="bg-white rounded-xl shadow-lg p-8">
@@ -261,7 +261,7 @@ export default function PreventionChecklistPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar active="home" />
+      <Navbar active="checklist" />
       
       <div className="pt-20">
         {/* Header */}

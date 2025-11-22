@@ -180,13 +180,68 @@ export default function ProfilePage() {
   }, [])
 
   const loadUserProfile = async (userId: string) => {
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('*')
-      .eq('id', userId)
-      .single()
-    
-    setUserProfile(profile)
+    try {
+      console.log('Loading profile for user:', userId)
+      
+      const { data: profile, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('id', userId)
+        .single()
+      
+      if (error) {
+        console.error('Profile query error:', error)
+        
+        // If profile doesn't exist, try to create one
+        if (error.code === 'PGRST116') {
+          console.log('Profile not found, creating new profile...')
+          await createUserProfile(userId)
+          return
+        }
+      }
+      
+      console.log('Profile loaded:', profile)
+      setUserProfile(profile)
+      
+    } catch (error) {
+      console.error('Error loading user profile:', error)
+      // Try to create profile if it doesn't exist
+      await createUserProfile(userId)
+    }
+  }
+
+  const createUserProfile = async (userId: string) => {
+    try {
+      console.log('Creating profile for user:', userId)
+      
+      // Get user metadata from auth
+      const { data: { user: authUser } } = await supabase.auth.getUser()
+      
+      const profileData = {
+        id: userId,
+        full_name: authUser?.user_metadata?.full_name || 
+                   authUser?.user_metadata?.name || 
+                   authUser?.email?.split('@')[0] || 
+                   'User',
+        avatar_url: authUser?.user_metadata?.avatar_url || null
+      }
+      
+      const { data: newProfile, error } = await supabase
+        .from('user_profiles')
+        .insert([profileData])
+        .select()
+        .single()
+      
+      if (error) {
+        console.error('Error creating profile:', error)
+      } else {
+        console.log('Profile created successfully:', newProfile)
+        setUserProfile(newProfile)
+      }
+      
+    } catch (error) {
+      console.error('Error in createUserProfile:', error)
+    }
   }
 
   const calculateUserStats = async (userId: string) => {
@@ -422,7 +477,7 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Navbar active="home" />
+        <Navbar active="profile" />
         <div className="pt-20 flex items-center justify-center min-h-screen">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-700"></div>
         </div>
@@ -433,7 +488,7 @@ export default function ProfilePage() {
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Navbar active="home" />
+        <Navbar active="profile" />
         <div className="pt-20">
           <div className="max-w-2xl mx-auto px-4 py-16 text-center">
             <div className="bg-white rounded-xl shadow-lg p-8">
@@ -459,7 +514,7 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar active="home" />
+      <Navbar active="profile" />
       
       <div className="pt-20">
         {/* Header */}
@@ -467,11 +522,18 @@ export default function ProfilePage() {
           <div className="max-w-6xl mx-auto px-4 py-12">
             <div className="flex items-center gap-6">
               <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center text-3xl font-bold">
-                {userProfile?.full_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
+                {userProfile?.full_name?.[0]?.toUpperCase() || 
+                 user?.user_metadata?.full_name?.[0]?.toUpperCase() || 
+                 user?.user_metadata?.name?.[0]?.toUpperCase() || 
+                 user.email?.[0]?.toUpperCase() || 'U'}
               </div>
               <div>
                 <h1 className="text-3xl font-bold mb-2">
-                  {userProfile?.full_name || 'User'}
+                  {userProfile?.full_name || 
+                   user?.user_metadata?.full_name || 
+                   user?.user_metadata?.name || 
+                   user.email?.split('@')[0] || 
+                   'User'}
                 </h1>
                 <p className="text-red-100">
                   {user.email}
@@ -639,7 +701,7 @@ export default function ProfilePage() {
                 href="/checklist"
                 className="bg-red-700 text-white px-6 py-3 rounded-lg font-medium hover:bg-red-800 transition-colors"
               >
-                Lanjutkan Checklist
+                Lanjutkan Misi
               </Link>
               <Link
                 href="/history"

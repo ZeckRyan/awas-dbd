@@ -25,19 +25,55 @@ export default function Navbar({ active }: NavbarProps) {
       } = await supabase.auth.getUser()
       setUser(user)
       
-      // Get user's full name from user_profiles
+      // Get user's full name from user_profiles or metadata
       if (user) {
-        const { data: profile } = await supabase
-          .from('user_profiles')
-          .select('full_name')
-          .eq('id', user.id)
-          .single()
-        
-        if (profile?.full_name) {
-          setUserName(profile.full_name)
-        } else {
-          // Fallback to email username if no full name
-          setUserName(user.email?.split('@')[0] || 'User')
+        try {
+          const { data: profile, error } = await supabase
+            .from('user_profiles')
+            .select('full_name')
+            .eq('id', user.id)
+            .single()
+          
+          if (profile?.full_name) {
+            setUserName(profile.full_name)
+          } else if (error?.code === 'PGRST116') {
+            // Profile doesn't exist, use metadata or create profile
+            const name = user.user_metadata?.full_name || 
+                        user.user_metadata?.name || 
+                        user.email?.split('@')[0] || 
+                        'User'
+            setUserName(name)
+            
+            // Try to create profile
+            try {
+              await supabase
+                .from('user_profiles')
+                .insert([{
+                  id: user.id,
+                  full_name: name,
+                  avatar_url: user.user_metadata?.avatar_url
+                }])
+            } catch (createError) {
+              console.log('Profile creation failed:', createError)
+            }
+          } else {
+            // Fallback to metadata or email
+            setUserName(
+              user.user_metadata?.full_name || 
+              user.user_metadata?.name || 
+              user.email?.split('@')[0] || 
+              'User'
+            )
+          }
+        } catch (error) {
+          console.error('Error fetching profile:', error)
+          // Use metadata as fallback
+          setUserName(
+            user.user_metadata?.full_name || 
+            user.user_metadata?.name || 
+            user.email?.split('@')[0] || 
+            'User'
+          )
         }
       }
     }
@@ -155,7 +191,7 @@ export default function Navbar({ active }: NavbarProps) {
                       <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                       </svg>
-                      Profile & Badges
+                      Misi & Badges
                     </Link>
                     
                     <Link
@@ -363,41 +399,12 @@ export default function Navbar({ active }: NavbarProps) {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   >
-                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                   </svg>
-                  Checklist
+                  Misi
                 </Link>
               </li>
             )}
-            <li>
-              <Link
-                href="/about"
-                className={
-                  active === 'about' ? activeList : `${regularList} group`
-                }
-                aria-current="page"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className={`w-5 h-5 ${
-                    active === 'about'
-                      ? 'text-red-600'
-                      : 'text-gray-900 group-hover:text-red-700'
-                  }`}
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <path d="M12 16v-4" />
-                  <path d="M12 8h.01" />
-                </svg>
-                Tentang
-              </Link>
-            </li>
             {user && (
               <li>
                 <Link
@@ -430,6 +437,35 @@ export default function Navbar({ active }: NavbarProps) {
                 </Link>
               </li>
             )}
+            <li>
+              <Link
+                href="/about"
+                className={
+                  active === 'about' ? activeList : `${regularList} group`
+                }
+                aria-current="page"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className={`w-5 h-5 ${
+                    active === 'about'
+                      ? 'text-red-600'
+                      : 'text-gray-900 group-hover:text-red-700'
+                  }`}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 16v-4" />
+                  <path d="M12 8h.01" />
+                </svg>
+                Tentang
+              </Link>
+            </li>
           </ul>
         </div>
       </div>
