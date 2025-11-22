@@ -65,7 +65,7 @@ export default function Home() {
       <Navbar active="home" />
 
       <div style={{ top: 0, marginTop: 80 }}>
-        <section className="relative bg-white overflow-hidden min-h-[90vh]">
+        <section className="relative bg-white overflow-hidden min-h-screen">
           {/* Subtle Background Pattern */}
           <div className="absolute inset-0 opacity-5">
             <svg className="w-full h-full" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
@@ -78,8 +78,8 @@ export default function Home() {
             </svg>
           </div>
           
-          <div className="relative mx-auto max-w-screen-xl px-4 py-16 lg:py-24">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center min-h-[70vh]">
+          <div className="relative mx-auto max-w-screen-xl px-4 py-20">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center min-h-[80vh]">
               
               {/* Left Content */}
               <div className="text-left space-y-6 lg:pr-8">
@@ -172,14 +172,14 @@ export default function Home() {
               <div className="relative lg:pl-8">
                 <div className="relative">
                   {/* Main Background Circle */}
-                  <div className="relative w-96 h-96 mx-auto">
-                    <div className="absolute inset-0 bg-gradient-to-br from-red-500 to-red-600 rounded-full shadow-2xl opacity-10"></div>
+                  <div className="relative w-80 h-80 lg:w-96 lg:h-96 mx-auto">
+                    <div className="absolute inset-0 bg-gradient-to-br from-red-500 to-red-600 rounded-full shadow-xl opacity-10"></div>
                     <div className="absolute inset-4 bg-gradient-to-br from-red-400 to-red-500 rounded-full opacity-20"></div>
                     
                     {/* Main Mosquito Illustration */}
                     <div className="absolute inset-16 flex items-center justify-center">
                       <div className="text-red-500 transform rotate-12 animate-pulse">
-                        <svg className="w-48 h-48" fill="currentColor" viewBox="0 0 512 512">
+                        <svg className="w-40 h-40 lg:w-48 lg:h-48" fill="currentColor" viewBox="0 0 512 512">
                           <path d="M463.1 474.7c-4.2-4.7-9.6-7.2-15.8-7.2s-11.6 2.5-15.8 7.2l-55.5 62.1c-8.4 9.4-8.4 23.7 0 33.1 8.4 9.4 22.1 9.4 30.5 0l55.5-62.1c8.4-9.4 8.4-23.7 0-33.1zM256 320c-88.4 0-160-71.6-160-160S167.6 0 256 0s160 71.6 160 160-71.6 160-160 160zm0-288c-70.7 0-128 57.3-128 128s57.3 128 128 128 128-57.3 128-128S326.7 32 256 32z"/>
                           <circle cx="256" cy="160" r="48"/>
                           <path d="M432 160c0-97.2-78.8-176-176-176S80 62.8 80 160c0 41.8 14.6 80.1 39 110.1L256 416l137-145.9c24.4-30 39-68.3 39-110.1z"/>
@@ -265,10 +265,222 @@ export default function Home() {
         </section>
       </div>
 
-      <section className="py-2 md:py-16 relative z-0">
-        <div className="mx-auto max-w-screen-xl px-4">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+      {/* Quick Tips Cards Section */}
+      <section className="min-h-screen bg-gray-50 flex items-center">
+        <div className="mx-auto max-w-screen-xl px-4 py-20 w-full">
+          <div className="text-center mb-12">
+            <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-3">
+              Tips Pencegahan DBD
+            </h2>
+            <p className="text-gray-600 text-base lg:text-lg max-w-2xl mx-auto mb-4">
+              Langkah-langkah sederhana untuk melindungi diri dan keluarga dari bahaya Demam Berdarah Dengue
+            </p>
+            <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-200 px-4 py-2 rounded-full text-blue-600 text-sm font-medium">
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM9 7a1 1 0 11-2 0 1 1 0 012 0zM7 10a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1H8a1 1 0 01-1-1v-3z"/>
+              </svg>
+              Metode 3M Plus - Cara Terbukti Efektif
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            {/* Card 1: Menguras */}
+            <div className="group bg-white rounded-xl p-5 shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 border border-gray-100">
+              <div className="text-center">
+                <div className="w-14 h-14 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                  <svg className="w-7 h-7 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2s-8 8.5-8 12a8 8 0 1 0 16 0c0-3.5-8-12-8-12zm0 18a6 6 0 0 1-6-6c0-2.17 3.5-6.5 6-9.47C14.5 7.5 18 11.83 18 14a6 6 0 0 1-6 6z"/>
+                    <circle cx="12" cy="14" r="2" fill="white"/>
+                  </svg>
+                </div>
+                <h3 className="text-base font-semibold text-gray-900 mb-2">
+                  Menguras & Membersihkan
+                </h3>
+                <p className="text-gray-600 text-sm leading-relaxed mb-3">
+                  Kuras dan bersihkan tempat penampungan air seperti bak mandi, ember, vas bunga minimal seminggu sekali
+                </p>
+                <div className="text-xs text-blue-600 font-medium">
+                  ✓ Bak mandi  ✓ Ember air  ✓ Vas bunga
+                </div>
+              </div>
+            </div>
+
+            {/* Card 2: Menutup */}
+            <div className="group bg-white rounded-xl p-5 shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 border border-gray-100">
+              <div className="text-center">
+                <div className="w-14 h-14 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center group-hover:bg-green-200 transition-colors">
+                  <svg className="w-7 h-7 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/>
+                    <path d="M7 10h10v7H7z" opacity="0.6"/>
+                    <path d="M9 7h6v2H9z"/>
+                  </svg>
+                </div>
+                <h3 className="text-base font-semibold text-gray-900 mb-2">
+                  Menutup Rapat
+                </h3>
+                <p className="text-gray-600 text-sm leading-relaxed mb-3">
+                  Tutup rapat-rapat tempat penyimpanan air dan wadah yang berpotensi menampung air hujan
+                </p>
+                <div className="text-xs text-green-600 font-medium">
+                  ✓ Tong air  ✓ Drum  ✓ Tempayan
+                </div>
+              </div>
+            </div>
+
+            {/* Card 3: Mendaur Ulang */}
+            <div className="group bg-white rounded-xl p-5 shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 border border-gray-100">
+              <div className="text-center">
+                <div className="w-14 h-14 mx-auto mb-4 bg-purple-100 rounded-full flex items-center justify-center group-hover:bg-purple-200 transition-colors">
+                  <svg className="w-7 h-7 text-purple-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2v6l4-4-4-4zM21 9l-4 4 4 4v-8zM12 22v-6l-4 4 4 4zM3 15l4-4-4-4v8z"/>
+                    <circle cx="12" cy="12" r="2" opacity="0.6"/>
+                  </svg>
+                </div>
+                <h3 className="text-base font-semibold text-gray-900 mb-2">
+                  Mendaur Ulang
+                </h3>
+                <p className="text-gray-600 text-sm leading-relaxed mb-3">
+                  Manfaatkan atau daur ulang barang bekas yang dapat menampung air seperti kaleng, ban bekas
+                </p>
+                <div className="text-xs text-purple-600 font-medium">
+                  ✓ Kaleng bekas  ✓ Ban bekas  ✓ Botol plastik
+                </div>
+              </div>
+            </div>
+
+            {/* Card 4: Plus (Tambahan) */}
+            <div className="group bg-white rounded-xl p-5 shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 border border-gray-100">
+              <div className="text-center">
+                <div className="w-14 h-14 mx-auto mb-4 bg-orange-100 rounded-full flex items-center justify-center group-hover:bg-orange-200 transition-colors">
+                  <svg className="w-7 h-7 text-orange-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                    <circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.3"/>
+                  </svg>
+                </div>
+                <h3 className="text-base font-semibold text-gray-900 mb-2">
+                  Plus Proteksi
+                </h3>
+                <p className="text-gray-600 text-sm leading-relaxed mb-3">
+                  Tambahan perlindungan dengan menanam tanaman anti nyamuk dan menggunakan obat nyamuk
+                </p>
+                <div className="text-xs text-orange-600 font-medium">
+                  ✓ Lavender  ✓ Serai wangi  ✓ Lotion anti nyamuk
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Additional Information Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
+            {/* Gejala DBD */}
+            <div className="bg-red-50 rounded-xl p-6 border border-red-200">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                  <svg className="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"/>
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-red-800">Waspadai Gejala DBD</h3>
+              </div>
+              <ul className="space-y-2 text-sm text-red-700">
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+                  Demam tinggi mendadak (38°C - 40°C) selama 2-7 hari
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+                  Sakit kepala hebat dan nyeri di belakang mata
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+                  Nyeri otot dan sendi di seluruh tubuh
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+                  Mual, muntah, dan hilang nafsu makan
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+                  Ruam merah pada kulit
+                </li>
+              </ul>
+            </div>
+
+            {/* Kapan Harus ke Dokter */}
+            <div className="bg-yellow-50 rounded-xl p-6 border border-yellow-200">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
+                  <svg className="w-5 h-5 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 2L3 7v11c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V7l-7-5z"/>
+                    <path d="M9 10h2v6H9v-6zm0-4h2v2H9V6z" fill="white"/>
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-yellow-800">Segera ke Dokter Jika</h3>
+              </div>
+              <ul className="space-y-2 text-sm text-yellow-700">
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 bg-yellow-500 rounded-full"></span>
+                  Demam tidak turun setelah 3 hari
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 bg-yellow-500 rounded-full"></span>
+                  Muntah terus-menerus dan tidak bisa makan/minum
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 bg-yellow-500 rounded-full"></span>
+                  Nyeri perut hebat dan terus-menerus
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 bg-yellow-500 rounded-full"></span>
+                  Pendarahan (mimisan, gusi berdarah)
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 bg-yellow-500 rounded-full"></span>
+                  Lemas, gelisah, atau pingsan
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Call to Action */}
+          <div className="text-center mt-12">
+            <div className="inline-flex items-center gap-2 bg-red-50 border border-red-200 px-3 py-2 rounded-full text-red-600 text-sm font-medium mb-4">
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"/>
+              </svg>
+              Pencegahan adalah kunci utama
+            </div>
+            <p className="text-gray-600 max-w-xl mx-auto leading-relaxed text-sm mb-6">
+              DBD dapat dicegah dengan menerapkan metode 3M Plus secara konsisten. Jaga kebersihan lingkungan dan segera konsultasi ke dokter jika mengalami gejala.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                href="/form"
+                className="inline-flex items-center gap-2 bg-red-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-red-700 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Cek Gejala DBD
+              </Link>
+              <Link
+                href="/about"
+                className="inline-flex items-center gap-2 bg-white border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Pelajari Lebih Lanjut
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="min-h-screen relative z-0 flex items-center bg-white">
+        <div className="mx-auto max-w-screen-xl px-4 py-20 w-full">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-3">
               Peta Sebaran DBD di Indonesia
             </h2>
             <p className="text-gray-600">
@@ -278,7 +490,7 @@ export default function Home() {
           
           <div
             id="chart"
-            className="chart mx-auto w-full bg-white rounded-lg shadow-lg p-4"
+            className="chart mx-auto w-full bg-white rounded-lg shadow-lg p-6"
             style={{ minHeight: 600, height: 600, width: '100%' }}
           >
             {isLoadingPlot && (
