@@ -162,6 +162,212 @@ CREATE POLICY "Users can view own examinations"
 CREATE POLICY "Users can create examinations"
   ON examinations FOR INSERT
   WITH CHECK (auth.uid() = user_id);
+
+-- Tambahkan table untuk menyimpan profile user yang lebih detail
+CREATE TABLE IF NOT EXISTS user_profiles (
+    id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
+    full_name TEXT,
+    avatar_url TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Enable RLS untuk user_profiles
+ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policy untuk user_profiles - user hanya bisa akses profile mereka sendiri
+CREATE POLICY "Users can view own profile" ON user_profiles
+    FOR SELECT USING (auth.uid() = id);
+
+CREATE POLICY "Users can update own profile" ON user_profiles
+    FOR UPDATE USING (auth.uid() = id);
+
+CREATE POLICY "Users can insert own profile" ON user_profiles
+    FOR INSERT WITH CHECK (auth.uid() = id);
+
+-- Trigger untuk auto-update updated_at pada user_profiles
+CREATE OR REPLACE FUNCTION update_user_profiles_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_user_profiles_updated_at
+    BEFORE UPDATE ON user_profiles
+    FOR EACH ROW
+    EXECUTE FUNCTION update_user_profiles_updated_at();
+
+-- Function untuk otomatis membuat profile ketika user baru register
+CREATE OR REPLACE FUNCTION create_user_profile()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO user_profiles (id, full_name)
+    VALUES (
+        NEW.id,
+        COALESCE(NEW.raw_user_meta_data->>'full_name', 'User')
+    );
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger untuk auto-create profile ketika user baru register
+DROP TRIGGER IF EXISTS create_user_profile_trigger ON auth.users;
+CREATE TRIGGER create_user_profile_trigger
+    AFTER INSERT ON auth.users
+    FOR EACH ROW
+    EXECUTE FUNCTION create_user_profile();
+
+-- Update existing users yang belum punya profile (optional, untuk existing users)
+INSERT INTO user_profiles (id, full_name)
+SELECT id, COALESCE(raw_user_meta_data->>'full_name', 'User')
+FROM auth.users
+WHERE id NOT IN (SELECT id FROM user_profiles)
+ON CONFLICT (id) DO NOTHING;
+
+-- Table untuk menyimpan progress checklist pencegahan mingguan
+CREATE TABLE IF NOT EXISTS weekly_prevention_progress (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    week_start DATE NOT NULL,
+    completed_items TEXT[] NOT NULL DEFAULT '{}',
+    total_items INTEGER NOT NULL DEFAULT 8,
+    completion_percentage INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    
+    -- Constraint untuk memastikan satu user hanya punya satu record per minggu
+    UNIQUE(user_id, week_start)
+);
+
+-- Index untuk performa query
+CREATE INDEX IF NOT EXISTS idx_weekly_prevention_user_id ON weekly_prevention_progress(user_id);
+CREATE INDEX IF NOT EXISTS idx_weekly_prevention_week_start ON weekly_prevention_progress(week_start);
+CREATE INDEX IF NOT EXISTS idx_weekly_prevention_user_week ON weekly_prevention_progress(user_id, week_start);
+
+-- Function untuk update timestamp otomatis
+CREATE OR REPLACE FUNCTION update_weekly_prevention_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+-- Trigger untuk auto-update updated_at
+CREATE OR REPLACE TRIGGER update_weekly_prevention_updated_at 
+    BEFORE UPDATE ON weekly_prevention_progress 
+    FOR EACH ROW 
+    EXECUTE FUNCTION update_weekly_prevention_updated_at();
+
+-- RLS Policy untuk keamanan
+ALTER TABLE weekly_prevention_progress ENABLE ROW LEVEL SECURITY;
+
+-- Policy untuk user hanya bisa akses data mereka sendiri
+CREATE POLICY "Users can view their own prevention progress" ON weekly_prevention_progress
+    FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert their own prevention progress" ON weekly_prevention_progress
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update their own prevention progress" ON weekly_prevention_progress
+    FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete their own prevention progress" ON weekly_prevention_progress
+    FOR DELETE USING (auth.uid() = user_id);
+
+-- Grant permissions
+GRANT SELECT, INSERT, UPDATE, DELETE ON weekly_prevention_progress TO authenticated;
+
+-- Table untuk menyimpan achievement/pencapaian user
+CREATE TABLE IF NOT EXISTS user_achievements (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    achievement_type VARCHAR(50) NOT NULL,
+    achievement_name VARCHAR(100) NOT NULL,
+    description TEXT,
+    earned_at TIMESTAMPTZ DEFAULT NOW(),
+    week_start DATE,
+    
+    -- Constraint untuk memastikan satu user tidak bisa dapat achievement yang sama di minggu yang sama
+    UNIQUE(user_id, achievement_type, week_start)
+);
+
+-- Index untuk achievements
+CREATE INDEX IF NOT EXISTS idx_user_achievements_user_id ON user_achievements(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_achievements_type ON user_achievements(achievement_type);
+
+-- RLS Policy untuk achievements
+ALTER TABLE user_achievements ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view their own achievements" ON user_achievements
+    FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert their own achievements" ON user_achievements
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- Grant permissions
+GRANT SELECT, INSERT ON user_achievements TO authenticated;
+
+-- Function untuk auto-create achievements berdasarkan progress
+CREATE OR REPLACE FUNCTION create_achievement_on_progress()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Achievement untuk first time completion
+    IF NEW.completion_percentage > 0 AND (
+        OLD IS NULL OR OLD.completion_percentage = 0
+    ) THEN
+        INSERT INTO user_achievements (user_id, achievement_type, achievement_name, description, week_start)
+        VALUES (
+            NEW.user_id, 
+            'first_steps', 
+            'Langkah Pertama', 
+            'Menyelesaikan checklist pencegahan pertama kali',
+            NEW.week_start
+        )
+        ON CONFLICT (user_id, achievement_type, week_start) DO NOTHING;
+    END IF;
+    
+    -- Achievement untuk 50% completion
+    IF NEW.completion_percentage >= 50 AND (
+        OLD IS NULL OR OLD.completion_percentage < 50
+    ) THEN
+        INSERT INTO user_achievements (user_id, achievement_type, achievement_name, description, week_start)
+        VALUES (
+            NEW.user_id, 
+            'halfway_hero', 
+            'Pahlawan Setengah Jalan', 
+            'Menyelesaikan 50% checklist pencegahan',
+            NEW.week_start
+        )
+        ON CONFLICT (user_id, achievement_type, week_start) DO NOTHING;
+    END IF;
+    
+    -- Achievement untuk 100% completion
+    IF NEW.completion_percentage = 100 AND (
+        OLD IS NULL OR OLD.completion_percentage < 100
+    ) THEN
+        INSERT INTO user_achievements (user_id, achievement_type, achievement_name, description, week_start)
+        VALUES (
+            NEW.user_id, 
+            'perfect_week', 
+            'Minggu Sempurna', 
+            'Menyelesaikan 100% checklist pencegahan',
+            NEW.week_start
+        )
+        ON CONFLICT (user_id, achievement_type, week_start) DO NOTHING;
+    END IF;
+    
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+-- Trigger untuk create achievements otomatis
+CREATE OR REPLACE TRIGGER create_achievements_trigger
+    AFTER INSERT OR UPDATE ON weekly_prevention_progress
+    FOR EACH ROW
+    EXECUTE FUNCTION create_achievement_on_progress();
 ```
 
 ### Langkah 4: Konfigurasi Environment Variables

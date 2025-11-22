@@ -6,7 +6,7 @@ import { createClient } from '../../utils/supabase/client'
 import { User } from '@supabase/supabase-js'
 
 interface NavbarProps {
-  active: 'home' | 'form' | 'login' | 'history' | 'about' | 'articles'
+  active: 'home' | 'form' | 'login' | 'history' | 'about' | 'articles' | 'checklist' | 'profile'
 }
 
 export default function Navbar({ active }: NavbarProps) {
@@ -147,6 +147,17 @@ export default function Navbar({ active }: NavbarProps) {
 
                   {/* Menu Items */}
                   <div className="py-1">
+                    <Link
+                      href="/profile"
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      onClick={() => setShowDropdown(false)}
+                    >
+                      <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      Profile & Badges
+                    </Link>
+                    
                     <Link
                       href="/history"
                       className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
@@ -329,6 +340,35 @@ export default function Navbar({ active }: NavbarProps) {
                 Artikel
               </Link>
             </li>
+            {user && (
+              <li>
+                <Link
+                  href="/checklist"
+                  className={
+                    active === 'checklist' ? activeList : `${regularList} group`
+                  }
+                  aria-current="page"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className={`w-5 h-5 ${
+                      active === 'checklist'
+                        ? 'text-red-600'
+                        : 'text-gray-900 group-hover:text-red-700'
+                    }`}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  Checklist
+                </Link>
+              </li>
+            )}
             <li>
               <Link
                 href="/about"
