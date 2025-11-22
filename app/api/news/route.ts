@@ -2,15 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
-  const query = searchParams.get('q') || 'demam berdarah'
-  const language = 'id'
-  const pageSize = 10
+  const query = searchParams.get('q') || 'demam-berdarah'
   
-  const apiKey = process.env.NEWS_API_KEY
+  const apiKey = process.env.NEWSDATA_API_KEY
   
   if (!apiKey) {
     return NextResponse.json(
-      { error: 'News API key not configured' },
+      { error: 'NewsData API key not configured' },
       { status: 500 }
     )
   }
@@ -18,15 +16,14 @@ export async function GET(request: NextRequest) {
   try {
     // Fokus pada kata kunci DBD yang spesifik
     const dbdKeywords = {
-      'demam': '"demam tinggi" OR "dengue" OR "DBD"',
-      'demam-berdarah': '"demam berdarah" OR "dengue" OR "DBD"',
-      'pencegahan': '"pencegahan DBD" OR "fogging" OR "3M dengue"',
-      'vaksin': '"vaksin db" OR "vaksin DBD"',
-      'teknologi': '"AI dengue" OR "deteksi DBD" OR "teknologi dbd"'
+      'demam-berdarah': 'Demam Berdarah',
+      'pencegahan': 'Pencegahan DBD',
+      'vaksin': 'Vaksin Dengue',
+      'teknologi': 'Teknologi DBD'
     }
     
-    const searchQuery = dbdKeywords[query as keyof typeof dbdKeywords] || '"demam berdarah" OR "dengue" OR "DBD"'
-    const url = `https://newsapi.org/v2/everything?q=${encodeURIComponent(searchQuery)}&language=${language}&pageSize=${pageSize}&sortBy=publishedAt&apiKey=${apiKey}`
+    const searchQuery = dbdKeywords[query as keyof typeof dbdKeywords] || 'Demam Berdarah'
+    const url = `https://newsdata.io/api/1/latest?apikey=${apiKey}&q=${encodeURIComponent(searchQuery)}&language=id&size=10`
     
     const response = await fetch(url, {
       headers: {
@@ -35,18 +32,17 @@ export async function GET(request: NextRequest) {
     })
 
     if (!response.ok) {
-      throw new Error(`News API responded with status: ${response.status}`)
+      throw new Error(`NewsData API responded with status: ${response.status}`)
     }
 
     const data = await response.json()
     
-    // Filter artikel untuk memastikan relevansi dengan DBD
-    const filteredArticles = data.articles?.filter((article: any) => {
-      if (!article.title || !article.description || !article.url) return false
-      if (article.title.includes('[Removed]') || article.description.includes('[Removed]')) return false
+    // Filter dan transform artikel untuk kompatibilitas dengan interface existing
+    const filteredArticles = data.results?.filter((article: any) => {
+      if (!article.title || !article.link) return false
       
       const titleLower = article.title.toLowerCase()
-      const descLower = article.description.toLowerCase()
+      const descLower = (article.description || '').toLowerCase()
       
       return (
         titleLower.includes('dbd') ||
@@ -58,17 +54,27 @@ export async function GET(request: NextRequest) {
         descLower.includes('dengue') ||
         descLower.includes('aedes')
       )
-    }) || []
+    }).map((article: any) => ({
+      title: article.title,
+      description: article.description || 'Baca selengkapnya di sumber berita...',
+      url: article.link,
+      urlToImage: article.image_url,
+      publishedAt: article.pubDate,
+      source: {
+        name: article.source_id || 'NewsData'
+      },
+      author: article.creator?.[0] || article.source_id || null
+    })) || []
 
     return NextResponse.json({
       articles: filteredArticles,
-      totalResults: data.totalResults
+      totalResults: data.totalResults || filteredArticles.length
     })
     
   } catch (error) {
     console.error('Error fetching news:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch news' },
+      { error: 'Failed to fetch news from NewsData' },
       { status: 500 }
     )
   }
