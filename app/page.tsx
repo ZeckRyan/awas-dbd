@@ -19,6 +19,151 @@ const LeafletMap = dynamic(() => import('./components/LeafletMap'), {
   ),
 })
 
+// FAQ Accordion Component
+const FAQAccordion = () => {
+  const [openIndex, setOpenIndex] = useState<number | null>(null)
+
+  const faqData = [
+    {
+      question: "Bagaimana mengenali gejala awal DBD?",
+      icon: "🌡️",
+      color: "red",
+      content: [
+        { icon: "🔥", text: "Demam tinggi mendadak (38°C - 40°C) tanpa sebab yang jelas" },
+        { icon: "🤕", text: "Sakit kepala hebat yang terasa menusuk, terutama di area belakang mata" },
+        { icon: "💪", text: "Nyeri otot dan sendi yang membuat tubuh terasa sangat pegal" },
+        { icon: "🤢", text: "Mual, muntah, dan hilang nafsu makan secara tiba-tiba" },
+        { icon: "🔴", text: "Ruam merah kecil yang muncul di kulit, biasanya setelah hari ke-3" },
+        { icon: "⚠️", text: "Perlu diingat: Gejala awal DBD mirip flu biasa, jadi waspada jika demam tidak kunjung turun" }
+      ]
+    },
+    {
+      question: "Kapan harus segera ke dokter?",
+      icon: "🏥",
+      color: "yellow",
+      content: [
+        { icon: "🚨", text: "Demam tinggi berlangsung lebih dari 3 hari berturut-turut" },
+        { icon: "🤮", text: "Muntah terus-menerus sehingga tidak bisa makan atau minum" },
+        { icon: "⚡", text: "Nyeri perut hebat dan berkelanjutan yang tidak tertahankan" },
+        { icon: "🩸", text: "Pendarahan spontan: mimisan, gusi berdarah, atau bintik merah di kulit" },
+        { icon: "😵", text: "Lemas berlebihan, gelisah, atau kehilangan kesadaran" },
+        { icon: "💧", text: "Tanda dehidrasi: mulut kering, jarang buang air kecil, kulit pucat" }
+      ]
+    },
+    {
+      question: "Apa yang harus dilakukan dalam 24 jam pertama demam?",
+      icon: "⏰",
+      color: "blue",
+      content: [
+        { icon: "🌡️", text: "Monitor suhu tubuh setiap 2-3 jam dan catat dalam buku harian" },
+        { icon: "💊", text: "Berikan paracetamol untuk menurunkan demam, HINDARI aspirin dan ibuprofen" },
+        { icon: "💧", text: "Perbanyak minum air putih, oralit, atau jus buah segar" },
+        { icon: "🛏️", text: "Istirahat total di tempat tidur dan hindari aktivitas berat" },
+        { icon: "🍲", text: "Konsumsi makanan bergizi yang mudah dicerna seperti bubur atau sup" },
+        { icon: "👨‍⚕️", text: "Hubungi dokter jika demam tidak turun setelah 24 jam atau muncul gejala lain" }
+      ]
+    },
+    {
+      question: "Apa perbedaan DBD dan tipes?",
+      icon: "🔍",
+      color: "green",
+      content: [
+        { icon: "🌡️", text: "DBD: Demam tinggi mendadak vs Tipes: Demam naik bertahap" },
+        { icon: "🤕", text: "DBD: Sakit kepala hebat dan nyeri mata vs Tipes: Sakit kepala ringan" },
+        { icon: "🔴", text: "DBD: Ruam merah kecil muncul hari ke-3 vs Tipes: Bintik merah di dada (rose spot)" },
+        { icon: "💪", text: "DBD: Nyeri otot dan sendi parah vs Tipes: Nyeri otot ringan" },
+        { icon: "🍽️", text: "DBD: Mual muntah awal penyakit vs Tipes: Gangguan pencernaan dominan" },
+        { icon: "🧪", text: "Diagnosis pasti memerlukan tes laboratorium: NS1, IgG/IgM untuk DBD" }
+      ]
+    }
+  ]
+
+  const toggleAccordion = (index: number) => {
+    setOpenIndex(openIndex === index ? null : index)
+  }
+
+  const getColorClasses = (color: string) => {
+    const colorMap = {
+      red: { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700', icon: 'bg-red-100' },
+      yellow: { bg: 'bg-yellow-50', border: 'border-yellow-200', text: 'text-yellow-700', icon: 'bg-yellow-100' },
+      blue: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700', icon: 'bg-blue-100' },
+      green: { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-700', icon: 'bg-green-100' }
+    }
+    return colorMap[color as keyof typeof colorMap] || colorMap.red
+  }
+
+  return (
+    <div className="space-y-4">
+      {faqData.map((faq, index) => {
+        const colors = getColorClasses(faq.color)
+        const isOpen = openIndex === index
+
+        return (
+          <div key={index} className={`rounded-xl border-2 ${colors.border} ${colors.bg} overflow-hidden transition-all duration-300`}>
+            <button
+              onClick={() => toggleAccordion(index)}
+              className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-opacity-80 transition-all duration-200"
+            >
+              <div className="flex items-center gap-4">
+                <div className={`w-12 h-12 ${colors.icon} rounded-full flex items-center justify-center text-xl`}>
+                  {faq.icon}
+                </div>
+                <h3 className={`text-lg font-semibold ${colors.text}`}>
+                  {faq.question}
+                </h3>
+              </div>
+              <svg
+                className={`w-5 h-5 ${colors.text} transform transition-transform duration-200 ${
+                  isOpen ? 'rotate-180' : 'rotate-0'
+                }`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            <div className={`px-6 transition-all duration-300 ${isOpen ? 'pb-6' : 'pb-0 max-h-0 overflow-hidden'}`}>
+              <div className="space-y-3 pt-2">
+                {faq.content.map((item, itemIndex) => (
+                  <div key={itemIndex} className="flex items-start gap-3">
+                    <span className="text-lg mt-0.5 flex-shrink-0">{item.icon}</span>
+                    <p className={`${colors.text} leading-relaxed`}>
+                      {item.text}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              
+              {/* Call to action di akhir setiap FAQ */}
+              <div className="mt-4 pt-4 border-t border-opacity-30">
+                <p className="text-sm text-gray-600 mb-3">
+                  Masih ada pertanyaan? Gunakan sistem deteksi kami untuk analisis lebih lanjut.
+                </p>
+                <Link
+                  href="/form"
+                  className={`inline-flex items-center gap-2 px-4 py-2 
+                    ${faq.color === 'red' ? 'bg-red-600 hover:bg-red-700' : 
+                      faq.color === 'yellow' ? 'bg-amber-600 hover:bg-amber-700' : 
+                      faq.color === 'blue' ? 'bg-blue-600 hover:bg-blue-700' : 
+                      'bg-green-600 hover:bg-green-700'} 
+                    text-white rounded-lg text-sm font-medium transition-colors shadow-md hover:shadow-lg`}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  Cek Gejala Sekarang
+                </Link>
+              </div>
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 export default function Home() {
   const [plotData, setPlotData] = useState<any>(null)
   const [isLoadingPlot, setIsLoadingPlot] = useState<boolean>(true)
@@ -442,42 +587,30 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Call to Action */}
-          <div className="text-center mt-12">
-            <div className="inline-flex items-center gap-2 bg-red-50 border border-red-200 px-3 py-2 rounded-full text-red-600 text-sm font-medium mb-4">
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"/>
-              </svg>
-              Pencegahan adalah kunci utama
-            </div>
-            <p className="text-gray-600 max-w-xl mx-auto leading-relaxed text-sm mb-6">
-              DBD dapat dicegah dengan menerapkan metode 3M Plus secara konsisten. Jaga kebersihan lingkungan dan segera konsultasi ke dokter jika mengalami gejala.
+          
+        </div>
+      </section>
+
+      {/* FAQ/Edukasi Section */}
+      <section className="min-h-screen bg-white flex items-center">
+        <div className="mx-auto max-w-screen-xl px-4 py-20 w-full">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+              Artikel Edukasi DBD
+            </h2>
+            <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+              Pertanyaan umum seputar DBD yang perlu Anda ketahui untuk pencegahan dan penanganan yang tepat
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                href="/form"
-                className="inline-flex items-center gap-2 bg-red-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-red-700 transition-colors"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                Cek Gejala DBD
-              </Link>
-              <Link
-                href="/about"
-                className="inline-flex items-center gap-2 bg-white border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                Pelajari Lebih Lanjut
-              </Link>
-            </div>
+          </div>
+
+          <div className="max-w-4xl mx-auto">
+            <FAQAccordion />
           </div>
         </div>
       </section>
 
-      <section className="min-h-screen relative z-0 flex items-center bg-white">
+      <section className="min-h-screen relative z-0 flex items-center bg-white"
+        style={{ backgroundColor: '#fafafa' }}>
         <div className="mx-auto max-w-screen-xl px-4 py-20 w-full">
           <div className="text-center mb-10">
             <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-3">
