@@ -6,7 +6,7 @@ import { createClient } from '../../utils/supabase/client'
 import { User } from '@supabase/supabase-js'
 
 interface NavbarProps {
-  active: 'home' | 'form' | 'login' | 'history' | 'about'
+  active: 'home' | 'form' | 'login' | 'history' | 'about' | 'articles'
 }
 
 export default function Navbar({ active }: NavbarProps) {
@@ -297,6 +297,36 @@ export default function Navbar({ active }: NavbarProps) {
                   <path d="M18.944 12.33a1 1 0 0 0 0-.66 7.5 7.5 0 0 0-13.888 0 1 1 0 0 0 0 .66 7.5 7.5 0 0 0 13.888 0" />
                 </svg>
                 Periksa
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/articles"
+                className={
+                  active === 'articles' ? activeList : `${regularList} group`
+                }
+                aria-current="page"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className={`w-5 h-5 ${
+                    active === 'articles'
+                      ? 'text-red-600'
+                      : 'text-gray-900 group-hover:text-red-700'
+                  }`}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/>
+                  <path d="M18 14h-8"/>
+                  <path d="M15 18h-5"/>
+                  <path d="M10 6h8"/>
+                </svg>
+                Artikel
               </Link>
             </li>
             <li>
