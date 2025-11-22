@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import Chatbot from './components/Chatbot'
 
 export const metadata: Metadata = {
   title: 'Dengue Detector - Deteksi DBD Lebih Dini',
@@ -16,7 +17,10 @@ export default function RootLayout({
       <head>
         <link rel="shortcut icon" href="/uty_logo.png" type="image/x-icon" />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <Chatbot />
+      </body>
     </html>
   )
 }
