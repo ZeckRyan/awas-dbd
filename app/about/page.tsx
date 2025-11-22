@@ -247,27 +247,7 @@ export default function AboutPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {/* Developer 1 */}
-              <div className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
-                <div className="bg-gradient-to-r from-red-600 to-red-800 h-32"></div>
-                <div className="text-center -mt-16 pb-8 px-6">
-                  <div className="w-32 h-32 rounded-full bg-gray-200 border-4 border-white mx-auto mb-4 flex items-center justify-center overflow-hidden">
-                    <Image
-                      src="/images/alie.jpg"
-                      alt="Alie Pratama"
-                      width={128}
-                      height={128}
-                      className="w-full h-auto text-gray-400"
-                    />
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">
-                    Alie Pratama
-                  </h3>
-                  <p className="text-red-700 font-medium mb-3">Full Stack Developer</p>
-                  <p className="text-gray-600 text-sm mb-4">
-                    Bertanggung jawab atas pengembangan frontend dan integrasi API
-                  </p>
-                </div>
-              </div>
+              
 
               {/* Developer 2 */}
               <div className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
@@ -311,6 +291,27 @@ export default function AboutPage() {
                   <p className="text-red-700 font-medium mb-3">UI/UX Designer & Developer</p>
                   <p className="text-gray-600 text-sm mb-4">
                     Merancang interface dan user experience aplikasi
+                  </p>
+                </div>
+              </div>
+              <div className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+                <div className="bg-gradient-to-r from-red-600 to-red-800 h-32"></div>
+                <div className="text-center -mt-16 pb-8 px-6">
+                  <div className="w-32 h-32 rounded-full bg-gray-200 border-4 border-white mx-auto mb-4 flex items-center justify-center overflow-hidden">
+                    <Image
+                      src="/images/joko.jpg"
+                      alt="Joko Yuliyanto"
+                      width={128}
+                      height={128}
+                      className="w-full h-auto text-gray-400"
+                    />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">
+                    Joko Yuliyanto
+                  </h3>
+                  <p className="text-red-700 font-medium mb-3">Full Stack Developer</p>
+                  <p className="text-gray-600 text-sm mb-4">
+                    Bertanggung jawab atas pengembangan frontend dan integrasi API
                   </p>
                 </div>
               </div>
