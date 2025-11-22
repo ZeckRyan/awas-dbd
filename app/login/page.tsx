@@ -38,12 +38,22 @@ function LoginContent() {
     setLoading(true)
 
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      // Debug information
+      console.log('=== GOOGLE AUTH DEBUG ===')
+      console.log('NODE_ENV:', process.env.NODE_ENV)
+      console.log('Window location:', window.location.href)
+      console.log('Window origin:', window.location.origin)
+      console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL)
+      
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
       })
+      
+      console.log('Auth response:', { data, error })
 
       if (error) throw error
     } catch (error: any) {
+      console.error('Auth error:', error)
       setLoading(false)
     }
   }
