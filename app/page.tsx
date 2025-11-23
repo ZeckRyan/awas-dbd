@@ -83,13 +83,8 @@ const FAQAccordion = () => {
   }
 
   const getColorClasses = (color: string) => {
-    const colorMap = {
-      red: { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700', icon: 'bg-red-100' },
-      yellow: { bg: 'bg-yellow-50', border: 'border-yellow-200', text: 'text-yellow-700', icon: 'bg-yellow-100' },
-      blue: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700', icon: 'bg-blue-100' },
-      green: { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-700', icon: 'bg-green-100' }
-    }
-    return colorMap[color as keyof typeof colorMap] || colorMap.red
+    // Semua card FAQ menggunakan warna merah seperti card pertama
+    return { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700', icon: 'bg-red-100' }
   }
 
   return (
@@ -143,12 +138,7 @@ const FAQAccordion = () => {
                 </p>
                 <Link
                   href="/form"
-                  className={`inline-flex items-center gap-2 px-4 py-2 
-                    ${faq.color === 'red' ? 'bg-red-600 hover:bg-red-700' : 
-                      faq.color === 'yellow' ? 'bg-amber-600 hover:bg-amber-700' : 
-                      faq.color === 'blue' ? 'bg-blue-600 hover:bg-blue-700' : 
-                      'bg-green-600 hover:bg-green-700'} 
-                    text-white rounded-lg text-sm font-medium transition-colors shadow-md hover:shadow-lg`}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors shadow-md hover:shadow-lg"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -499,7 +489,7 @@ export default function Home() {
             <p className="text-gray-600 text-base lg:text-lg max-w-2xl mx-auto mb-4">
               Langkah-langkah sederhana untuk melindungi diri dan keluarga dari bahaya Demam Berdarah Dengue
             </p>
-            <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-200 px-4 py-2 rounded-full text-blue-600 text-sm font-medium">
+            <div className="inline-flex items-center gap-2 bg-red-50 border border-red-200 px-4 py-2 rounded-full text-red-600 text-sm font-medium">
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM9 7a1 1 0 11-2 0 1 1 0 012 0zM7 10a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1H8a1 1 0 01-1-1v-3z"/>
               </svg>
@@ -509,10 +499,10 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
             {/* Card 1: Menguras */}
-            <div className="group bg-white rounded-xl p-5 shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 border border-gray-100">
+            <div className="group bg-red-50 rounded-xl p-5 shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 border border-red-200">
               <div className="text-center">
-                <div className="w-14 h-14 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-blue-200 transition-colors">
-                  <svg className="w-7 h-7 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                <div className="w-14 h-14 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center group-hover:bg-red-200 transition-colors">
+                  <svg className="w-7 h-7 text-red-700" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 2s-8 8.5-8 12a8 8 0 1 0 16 0c0-3.5-8-12-8-12zm0 18a6 6 0 0 1-6-6c0-2.17 3.5-6.5 6-9.47C14.5 7.5 18 11.83 18 14a6 6 0 0 1-6 6z"/>
                     <circle cx="12" cy="14" r="2" fill="white"/>
                   </svg>
@@ -523,17 +513,17 @@ export default function Home() {
                 <p className="text-gray-600 text-sm leading-relaxed mb-3">
                   Kuras dan bersihkan tempat penampungan air seperti bak mandi, ember, vas bunga minimal seminggu sekali
                 </p>
-                <div className="text-xs text-blue-600 font-medium">
+                <div className="text-xs text-red-700 font-medium">
                   ✓ Bak mandi  ✓ Ember air  ✓ Vas bunga
                 </div>
               </div>
             </div>
 
             {/* Card 2: Menutup */}
-            <div className="group bg-white rounded-xl p-5 shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 border border-gray-100">
+            <div className="group bg-red-50 rounded-xl p-5 shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 border border-red-200">
               <div className="text-center">
-                <div className="w-14 h-14 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center group-hover:bg-green-200 transition-colors">
-                  <svg className="w-7 h-7 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                <div className="w-14 h-14 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center group-hover:bg-red-200 transition-colors">
+                  <svg className="w-7 h-7 text-red-700" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/>
                     <path d="M7 10h10v7H7z" opacity="0.6"/>
                     <path d="M9 7h6v2H9z"/>
@@ -545,17 +535,17 @@ export default function Home() {
                 <p className="text-gray-600 text-sm leading-relaxed mb-3">
                   Tutup rapat-rapat tempat penyimpanan air dan wadah yang berpotensi menampung air hujan
                 </p>
-                <div className="text-xs text-green-600 font-medium">
+                <div className="text-xs text-red-700 font-medium">
                   ✓ Tong air  ✓ Drum  ✓ Tempayan
                 </div>
               </div>
             </div>
 
             {/* Card 3: Mendaur Ulang */}
-            <div className="group bg-white rounded-xl p-5 shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 border border-gray-100">
+            <div className="group bg-red-50 rounded-xl p-5 shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 border border-red-200">
               <div className="text-center">
-                <div className="w-14 h-14 mx-auto mb-4 bg-purple-100 rounded-full flex items-center justify-center group-hover:bg-purple-200 transition-colors">
-                  <svg className="w-7 h-7 text-purple-600" fill="currentColor" viewBox="0 0 24 24">
+                <div className="w-14 h-14 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center group-hover:bg-red-200 transition-colors">
+                  <svg className="w-7 h-7 text-red-700" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 2v6l4-4-4-4zM21 9l-4 4 4 4v-8zM12 22v-6l-4 4 4 4zM3 15l4-4-4-4v8z"/>
                     <circle cx="12" cy="12" r="2" opacity="0.6"/>
                   </svg>
@@ -566,17 +556,17 @@ export default function Home() {
                 <p className="text-gray-600 text-sm leading-relaxed mb-3">
                   Manfaatkan atau daur ulang barang bekas yang dapat menampung air seperti kaleng, ban bekas
                 </p>
-                <div className="text-xs text-purple-600 font-medium">
+                <div className="text-xs text-red-700 font-medium">
                   ✓ Kaleng bekas  ✓ Ban bekas  ✓ Botol plastik
                 </div>
               </div>
             </div>
 
             {/* Card 4: Plus (Tambahan) */}
-            <div className="group bg-white rounded-xl p-5 shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 border border-gray-100">
+            <div className="group bg-red-50 rounded-xl p-5 shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 border border-red-200">
               <div className="text-center">
-                <div className="w-14 h-14 mx-auto mb-4 bg-orange-100 rounded-full flex items-center justify-center group-hover:bg-orange-200 transition-colors">
-                  <svg className="w-7 h-7 text-orange-600" fill="currentColor" viewBox="0 0 24 24">
+                <div className="w-14 h-14 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center group-hover:bg-red-200 transition-colors">
+                  <svg className="w-7 h-7 text-red-700" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
                     <circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.3"/>
                   </svg>
@@ -587,7 +577,7 @@ export default function Home() {
                 <p className="text-gray-600 text-sm leading-relaxed mb-3">
                   Tambahan perlindungan dengan menanam tanaman anti nyamuk dan menggunakan obat nyamuk
                 </p>
-                <div className="text-xs text-orange-600 font-medium">
+                <div className="text-xs text-red-700 font-medium">
                   ✓ Lavender  ✓ Serai wangi  ✓ Lotion anti nyamuk
                 </div>
               </div>
@@ -748,7 +738,7 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Feature 1 - AI Detection */}
-            <div className="text-center p-6 rounded-lg border-2 border-gray-100 hover:border-red-700 hover:shadow-lg transition-all">
+            <div className="text-center p-6 rounded-lg border-2 border-red-200 bg-red-50 hover:border-red-400 hover:shadow-lg transition-all">
               <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -773,11 +763,11 @@ export default function Home() {
             </div>
 
             {/* Feature 2 - Weekly Missions */}
-            <div className="text-center p-6 rounded-lg border-2 border-gray-100 hover:border-orange-500 hover:shadow-lg transition-all">
-              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="text-center p-6 rounded-lg border-2 border-red-200 bg-red-50 hover:border-red-400 hover:shadow-lg transition-all">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="w-8 h-8 text-orange-600"
+                  className="w-8 h-8 text-red-700"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -797,11 +787,11 @@ export default function Home() {
             </div>
 
             {/* Feature 3 - Achievement System */}
-            <div className="text-center p-6 rounded-lg border-2 border-gray-100 hover:border-purple-500 hover:shadow-lg transition-all">
-              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="text-center p-6 rounded-lg border-2 border-red-200 bg-red-50 hover:border-red-400 hover:shadow-lg transition-all">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="w-8 h-8 text-purple-600"
+                  className="w-8 h-8 text-red-700"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -822,11 +812,11 @@ export default function Home() {
             </div>
 
             {/* Feature 4 - News Aggregator */}
-            <div className="text-center p-6 rounded-lg border-2 border-gray-100 hover:border-blue-500 hover:shadow-lg transition-all">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="text-center p-6 rounded-lg border-2 border-red-200 bg-red-50 hover:border-red-400 hover:shadow-lg transition-all">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="w-8 h-8 text-blue-600"
+                  className="w-8 h-8 text-red-700"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -852,11 +842,11 @@ export default function Home() {
           {/* Additional Features Row */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
             {/* Feature 5 - Data Visualization */}
-            <div className="text-center p-6 rounded-lg border-2 border-gray-100 hover:border-green-500 hover:shadow-lg transition-all">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="text-center p-6 rounded-lg border-2 border-red-200 bg-red-50 hover:border-red-400 hover:shadow-lg transition-all">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="w-8 h-8 text-green-600"
+                  className="w-8 h-8 text-red-700"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -878,11 +868,11 @@ export default function Home() {
             </div>
 
             {/* Feature 6 - History Tracking */}
-            <div className="text-center p-6 rounded-lg border-2 border-gray-100 hover:border-indigo-500 hover:shadow-lg transition-all">
-              <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="text-center p-6 rounded-lg border-2 border-red-200 bg-red-50 hover:border-red-400 hover:shadow-lg transition-all">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="w-8 h-8 text-indigo-600"
+                  className="w-8 h-8 text-red-700"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -905,11 +895,11 @@ export default function Home() {
             </div>
 
             {/* Feature 7 - Educational Content */}
-            <div className="text-center p-6 rounded-lg border-2 border-gray-100 hover:border-yellow-500 hover:shadow-lg transition-all">
-              <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="text-center p-6 rounded-lg border-2 border-red-200 bg-red-50 hover:border-red-400 hover:shadow-lg transition-all">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="w-8 h-8 text-yellow-600"
+                  className="w-8 h-8 text-red-700"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"

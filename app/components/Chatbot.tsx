@@ -214,7 +214,7 @@ export default function Chatbot({
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-full p-3 shadow-xl transition-all duration-300 hover:shadow-2xl hover:scale-105"
+          className="bg-red-500 hover:bg-red-600 text-white rounded-full p-3 shadow-xl transition-all duration-300 hover:shadow-2xl hover:scale-105"
         >
           <FiMessageCircle size={22} />
         </button>
@@ -224,12 +224,10 @@ export default function Chatbot({
       {isOpen && (
         <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 w-80 h-[28rem] flex flex-col overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white p-4 flex justify-between items-center">
+          <div className="bg-gradient-to-r from-red-500 to-red-600 text-white p-4 flex justify-between items-center">
             <div>
               <h3 className="font-medium text-sm">Asisten DBD</h3>
-              <p className="text-xs opacity-90">
-                {userId ? 'Login sebagai user' : 'Sesi anonim'}
-              </p>
+              <p className="text-xs opacity-90">Tanya tentang demam berdarah</p>
             </div>
             <button
               onClick={() => setIsOpen(false)}
@@ -249,7 +247,7 @@ export default function Chatbot({
                 <div
                   className={`max-w-[75%] px-4 py-2.5 text-sm leading-relaxed ${
                     message.isUser
-                      ? 'bg-emerald-500 text-white rounded-2xl rounded-br-md shadow-sm'
+                      ? 'bg-red-500 text-white rounded-2xl rounded-br-md shadow-sm'
                       : 'bg-white text-gray-700 rounded-2xl rounded-bl-md shadow-sm border border-gray-100'
                   }`}
                 >
@@ -261,9 +259,9 @@ export default function Chatbot({
               <div className="flex justify-start">
                 <div className="bg-white text-gray-700 px-4 py-3 rounded-2xl rounded-bl-md shadow-sm border border-gray-100">
                   <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                    <div className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    <div className="w-2 h-2 bg-red-400 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-red-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                    <div className="w-2 h-2 bg-red-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                   </div>
                 </div>
               </div>
@@ -280,13 +278,13 @@ export default function Chatbot({
                 onChange={(e) => setInputText(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Tulis pesan..."
-                className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 transition-all"
+                className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-400 transition-all"
                 disabled={isLoading}
               />
               <button
                 onClick={sendMessage}
                 disabled={!inputText.trim() || isLoading}
-                className="bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-200 disabled:cursor-not-allowed text-white rounded-xl p-2.5 transition-all duration-200 shadow-sm"
+                className="bg-red-500 hover:bg-red-600 disabled:bg-gray-200 disabled:cursor-not-allowed text-white rounded-xl p-2.5 transition-all duration-200 shadow-sm"
               >
                 <FiSend size={16} />
               </button>

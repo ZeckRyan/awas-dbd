@@ -1,29 +1,99 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@/utils/supabase/server'
 
 export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams
-  const query = searchParams.get('q') || 'demam-berdarah'
-  
-  const apiKey = process.env.NEWSDATA_API_KEY
-  
-  if (!apiKey) {
-    return NextResponse.json(
-      { error: 'NewsData API key not configured' },
-      { status: 500 }
+  try {
+    const supabase = await createClient()
+    const { searchParams } = new URL(request.url)
+    
+    const query = searchParams.get('q') || 'demam-berdarah'
+    const limit = parseInt(searchParams.get('limit') || '10')
+    
+    // Map query ke kategori database
+    const categoryMap: { [key: string]: string } = {
+      'demam-berdarah': 'Berita DBD Terbaru',
+      'pencegahan': 'Pencegahan DBD',
+      'vaksin': 'Vaksin Dengue',
+      'teknologi': 'Teknologi Deteksi'
+    }
+    
+    const category = categoryMap[query] || 'Berita DBD Terbaru'
+
+    let dbQuery = supabase
+      .from('news_articles')
+      .select('*')
+      .order('published_at', { ascending: false })
+      .limit(limit)
+
+    // Filter berdasarkan kategori jika bukan "Berita DBD Terbaru"
+    if (category !== 'Berita DBD Terbaru') {
+      dbQuery = dbQuery.eq('category', category)
+    }
+
+    const { data: articles, error } = await dbQuery
+
+    if (error) {
+      console.error('Database error:', error)
+      // Fallback ke external API jika database error
+      return await fetchFromExternalAPI(query, limit)
+    }
+
+    // Jika tidak ada artikel di database, coba sync dari external API
+    if (!articles || articles.length === 0) {
+      console.log('No articles in database, attempting to sync...')
+      await syncFromExternalAPI()
+      
+      // Coba query lagi setelah sync
+      const { data: retryArticles } = await dbQuery
+      
+      if (retryArticles && retryArticles.length > 0) {
+        return NextResponse.json({
+          articles: retryArticles.map(formatArticleFromDB),
+          totalResults: retryArticles.length
+        })
+      }
+      
+      // Jika masih kosong, fallback ke external API
+      return await fetchFromExternalAPI(query, limit)
+    }
+
+    return NextResponse.json({
+      articles: articles.map(formatArticleFromDB),
+      totalResults: articles.length
+    })
+
+  } catch (error) {
+    console.error('API Error:', error)
+    // Fallback ke external API jika ada error
+    return await fetchFromExternalAPI(
+      new URL(request.url).searchParams.get('q') || 'demam-berdarah', 
+      10
     )
   }
+}
 
+// Fallback function untuk fetch dari external API
+async function fetchFromExternalAPI(query: string, limit: number) {
   try {
-    // Fokus pada kata kunci DBD yang spesifik
-    const dbdKeywords = {
+    const apiKey = process.env.NEWSDATA_API_KEY
+    
+    if (!apiKey) {
+      return NextResponse.json(
+        { error: 'NewsData API key not configured' },
+        { status: 500 }
+      )
+    }
+
+    // Map query ke search terms
+    const dbdKeywords: { [key: string]: string } = {
       'demam-berdarah': 'Demam Berdarah',
       'pencegahan': 'Pencegahan DBD',
       'vaksin': 'Vaksin Dengue',
       'teknologi': 'Teknologi DBD'
     }
     
-    const searchQuery = dbdKeywords[query as keyof typeof dbdKeywords] || 'Demam Berdarah'
-    const url = `https://newsdata.io/api/1/latest?apikey=${apiKey}&q=${encodeURIComponent(searchQuery)}&language=id&size=10`
+    const searchQuery = dbdKeywords[query] || 'Demam Berdarah'
+    const url = `https://newsdata.io/api/1/latest?apikey=${apiKey}&q=${encodeURIComponent(searchQuery)}&language=id&size=${limit}`
     
     const response = await fetch(url, {
       headers: {
@@ -37,7 +107,7 @@ export async function GET(request: NextRequest) {
 
     const data = await response.json()
     
-    // Filter dan transform artikel untuk kompatibilitas dengan interface existing
+    // Filter dan transform artikel
     const filteredArticles = data.results?.filter((article: any) => {
       if (!article.title || !article.link) return false
       
@@ -72,10 +142,41 @@ export async function GET(request: NextRequest) {
     })
     
   } catch (error) {
-    console.error('Error fetching news:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch news from NewsData' },
-      { status: 500 }
-    )
+    console.error('External API Error:', error)
+    return NextResponse.json({
+      articles: [],
+      totalResults: 0
+    }, { status: 500 })
+  }
+}
+
+// Function untuk sync otomatis dari external API
+async function syncFromExternalAPI() {
+  try {
+    const baseUrl = process.env.NEXTAUTH_URL || process.env.VERCEL_URL || 'http://localhost:3000'
+    const syncResponse = await fetch(`${baseUrl}/api/news/sync`, {
+      method: 'POST'
+    })
+    
+    if (syncResponse.ok) {
+      console.log('Successfully synced news from external API')
+    }
+  } catch (error) {
+    console.error('Auto sync failed:', error)
+  }
+}
+
+// Format artikel dari database ke format yang expected oleh frontend
+function formatArticleFromDB(article: any) {
+  return {
+    title: article.title,
+    description: article.description || 'Baca selengkapnya di sumber berita...',
+    url: article.url,
+    urlToImage: article.image_url,
+    publishedAt: article.published_at,
+    source: {
+      name: article.source_name || 'News'
+    },
+    author: article.source_name || null
   }
 }

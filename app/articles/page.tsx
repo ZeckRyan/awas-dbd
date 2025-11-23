@@ -218,12 +218,12 @@ export default function ArticlesPage() {
           )}
 
           {/* Call to Action */}
-          <div className="mt-16 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-8 border border-blue-200">
+          <div className="mt-16 bg-gradient-to-r from-red-50 to-red-100 rounded-xl p-8 border border-red-200">
             <div className="text-center">
-              <h3 className="text-2xl font-bold text-blue-900 mb-4">
+              <h3 className="text-2xl font-bold text-red-900 mb-4">
                 Khawatir dengan Gejala DBD?
               </h3>
-              <p className="text-blue-800 mb-6 max-w-2xl mx-auto">
+              <p className="text-red-800 mb-6 max-w-2xl mx-auto">
                 Gunakan sistem deteksi kami untuk analisis dini gejala DBD dengan teknologi AI.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -238,7 +238,7 @@ export default function ArticlesPage() {
                 </Link>
                 <Link
                   href="/"
-                  className="inline-flex items-center gap-2 bg-white border border-blue-300 text-blue-700 px-6 py-3 rounded-lg font-medium hover:bg-blue-50 transition-colors"
+                  className="inline-flex items-center gap-2 bg-white border border-red-300 text-red-700 px-6 py-3 rounded-lg font-medium hover:bg-red-50 transition-colors"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>

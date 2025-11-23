@@ -334,18 +334,18 @@ export default function PreventionChecklistPage() {
             </h3>
             
             {checklist.map((item, index) => (
-              <div 
+              <button
                 key={item.id}
-                className={`bg-white rounded-lg border-2 p-4 transition-all duration-300 ${
+                onClick={() => handleChecklistChange(item.id)}
+                className={`w-full bg-white rounded-lg border-2 p-4 transition-all duration-300 text-left hover:scale-[1.02] ${
                   item.isCompleted 
                     ? 'border-green-200 bg-green-50' 
-                    : 'border-gray-200 hover:border-red-200'
+                    : 'border-gray-200 hover:border-red-200 hover:shadow-md'
                 }`}
               >
                 <div className="flex items-start gap-4">
                   {/* Checkbox */}
-                  <button
-                    onClick={() => handleChecklistChange(item.id)}
+                  <div
                     className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
                       item.isCompleted
                         ? 'bg-green-500 border-green-500 text-white'
@@ -357,7 +357,7 @@ export default function PreventionChecklistPage() {
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                     )}
-                  </button>
+                  </div>
 
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
@@ -379,7 +379,7 @@ export default function PreventionChecklistPage() {
                     {item.isCompleted ? '✅' : '⏳'}
                   </div>
                 </div>
-              </div>
+              </button>
             ))}
           </div>
 
@@ -424,11 +424,11 @@ export default function PreventionChecklistPage() {
           </div>
 
           {/* Tips Section */}
-          <div className="mt-8 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-6 border border-blue-200">
-            <h3 className="text-xl font-semibold text-blue-900 mb-4">
+          <div className="mt-8 bg-gradient-to-r from-red-50 to-red-100 rounded-xl p-6 border border-red-200">
+            <h3 className="text-xl font-semibold text-red-900 mb-4">
               💡 Tips Pencegahan Efektif
             </h3>
-            <div className="grid md:grid-cols-2 gap-4 text-blue-800">
+            <div className="grid md:grid-cols-2 gap-4 text-red-800">
               <div>
                 <h4 className="font-medium mb-2">🕐 Waktu Terbaik</h4>
                 <p className="text-sm">Lakukan pencegahan setiap hari Minggu untuk hasil maksimal</p>
