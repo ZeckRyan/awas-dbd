@@ -138,7 +138,8 @@ export default function Navbar({ active }: NavbarProps) {
             target="_blank"
             rel="noopener noreferrer"
           >
-            <img src="/dengue.png" className="h-10" alt="Logo" />
+            {/* Logo untuk mobile - ukuran lebih kecil */}
+            <img src="/dengue.png" className="h-8 md:h-10" alt="Dengue Checker Logo" />
           </a>
         </div>
         <div className="flex md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse gap-3">
