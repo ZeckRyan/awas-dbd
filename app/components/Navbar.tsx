@@ -14,6 +14,7 @@ export default function Navbar({ active }: NavbarProps) {
   const [user, setUser] = useState<User | null>(null)
   const [showDropdown, setShowDropdown] = useState(false)
   const [userName, setUserName] = useState<string>('')
+  const [userRole, setUserRole] = useState<string>('user')
   const dropdownRef = useRef<HTMLDivElement>(null)
   const supabase = createClient()
 
@@ -24,26 +25,27 @@ export default function Navbar({ active }: NavbarProps) {
         data: { user },
       } = await supabase.auth.getUser()
       setUser(user)
-      
+
       // Get user's full name from user_profiles or metadata
       if (user) {
         try {
           const { data: profile, error } = await supabase
             .from('user_profiles')
-            .select('full_name')
+            .select('full_name, role')
             .eq('id', user.id)
             .single()
-          
+
           if (profile?.full_name) {
             setUserName(profile.full_name)
+            setUserRole(profile.role || 'user')
           } else if (error?.code === 'PGRST116') {
             // Profile doesn't exist, use metadata or create profile
-            const name = user.user_metadata?.full_name || 
-                        user.user_metadata?.name || 
-                        user.email?.split('@')[0] || 
-                        'User'
+            const name = user.user_metadata?.full_name ||
+              user.user_metadata?.name ||
+              user.email?.split('@')[0] ||
+              'User'
             setUserName(name)
-            
+
             // Try to create profile
             try {
               await supabase
@@ -59,9 +61,9 @@ export default function Navbar({ active }: NavbarProps) {
           } else {
             // Fallback to metadata or email
             setUserName(
-              user.user_metadata?.full_name || 
-              user.user_metadata?.name || 
-              user.email?.split('@')[0] || 
+              user.user_metadata?.full_name ||
+              user.user_metadata?.name ||
+              user.email?.split('@')[0] ||
               'User'
             )
           }
@@ -69,9 +71,9 @@ export default function Navbar({ active }: NavbarProps) {
           console.error('Error fetching profile:', error)
           // Use metadata as fallback
           setUserName(
-            user.user_metadata?.full_name || 
-            user.user_metadata?.name || 
-            user.email?.split('@')[0] || 
+            user.user_metadata?.full_name ||
+            user.user_metadata?.name ||
+            user.email?.split('@')[0] ||
             'User'
           )
         }
@@ -171,7 +173,7 @@ export default function Navbar({ active }: NavbarProps) {
 
               {/* Dropdown Menu */}
               {showDropdown && (
-                <div 
+                <div
                   className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50"
                   onMouseLeave={() => setShowDropdown(false)}
                 >
@@ -184,6 +186,20 @@ export default function Navbar({ active }: NavbarProps) {
 
                   {/* Menu Items */}
                   <div className="py-1">
+                    {/* Admin Dashboard - Only for admin */}
+                    {userRole === 'admin' && (
+                      <Link
+                        href="/admin/dashboard"
+                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                        onClick={() => setShowDropdown(false)}
+                      >
+                        <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                        </svg>
+                        Admin Dashboard
+                      </Link>
+                    )}
+
                     <Link
                       href="/profile"
                       className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
@@ -192,9 +208,9 @@ export default function Navbar({ active }: NavbarProps) {
                       <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                       </svg>
-                      Misi & Badges
+                      Profil
                     </Link>
-                    
+
                     <Link
                       href="/history"
                       className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
@@ -205,7 +221,7 @@ export default function Navbar({ active }: NavbarProps) {
                       </svg>
                       Riwayat Pemeriksaan
                     </Link>
-                    
+
                     <Link
                       href="/form"
                       className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
@@ -281,9 +297,8 @@ export default function Navbar({ active }: NavbarProps) {
           </button>
         </div>
         <div
-          className={`items-center justify-between ${
-            isOpen ? '' : 'hidden'
-          } w-full md:flex md:w-auto md:order-1`}
+          className={`items-center justify-between ${isOpen ? '' : 'hidden'
+            } w-full md:flex md:w-auto md:order-1`}
           id="navbar-sticky"
         >
           <ul className="flex flex-col p-4 md:p-0 mt-4 font-medium border border-gray-100 rounded-lg bg-gray-50 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-white">
@@ -297,11 +312,10 @@ export default function Navbar({ active }: NavbarProps) {
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className={`w-5 h-5 ${
-                    active === 'home'
-                      ? 'text-red-600'
-                      : 'text-gray-900 group-hover:text-red-700'
-                  }`}
+                  className={`w-5 h-5 ${active === 'home'
+                    ? 'text-red-600'
+                    : 'text-gray-900 group-hover:text-red-700'
+                    }`}
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -325,11 +339,10 @@ export default function Navbar({ active }: NavbarProps) {
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className={`w-5 h-5 ${
-                    active === 'form'
-                      ? 'text-red-600'
-                      : 'text-gray-900 group-hover:text-red-700'
-                  }`}
+                  className={`w-5 h-5 ${active === 'form'
+                    ? 'text-red-600'
+                    : 'text-gray-900 group-hover:text-red-700'
+                    }`}
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -357,11 +370,10 @@ export default function Navbar({ active }: NavbarProps) {
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className={`w-5 h-5 ${
-                    active === 'articles'
-                      ? 'text-red-600'
-                      : 'text-gray-900 group-hover:text-red-700'
-                  }`}
+                  className={`w-5 h-5 ${active === 'articles'
+                    ? 'text-red-600'
+                    : 'text-gray-900 group-hover:text-red-700'
+                    }`}
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -369,43 +381,15 @@ export default function Navbar({ active }: NavbarProps) {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 >
-                  <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/>
-                  <path d="M18 14h-8"/>
-                  <path d="M15 18h-5"/>
-                  <path d="M10 6h8"/>
+                  <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2" />
+                  <path d="M18 14h-8" />
+                  <path d="M15 18h-5" />
+                  <path d="M10 6h8" />
                 </svg>
                 Artikel
               </Link>
             </li>
-            {user && (
-              <li>
-                <Link
-                  href="/checklist"
-                  className={
-                    active === 'checklist' ? activeList : `${regularList} group`
-                  }
-                  aria-current="page"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className={`w-5 h-5 ${
-                      active === 'checklist'
-                        ? 'text-red-600'
-                        : 'text-gray-900 group-hover:text-red-700'
-                    }`}
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                  </svg>
-                  Misi
-                </Link>
-              </li>
-            )}
+
             {user && (
               <li>
                 <Link
@@ -417,11 +401,10 @@ export default function Navbar({ active }: NavbarProps) {
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className={`w-5 h-5 ${
-                      active === 'history'
-                        ? 'text-red-600'
-                        : 'text-gray-900 group-hover:text-red-700'
-                    }`}
+                    className={`w-5 h-5 ${active === 'history'
+                      ? 'text-red-600'
+                      : 'text-gray-900 group-hover:text-red-700'
+                      }`}
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -448,11 +431,10 @@ export default function Navbar({ active }: NavbarProps) {
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className={`w-5 h-5 ${
-                    active === 'about'
-                      ? 'text-red-600'
-                      : 'text-gray-900 group-hover:text-red-700'
-                  }`}
+                  className={`w-5 h-5 ${active === 'about'
+                    ? 'text-red-600'
+                    : 'text-gray-900 group-hover:text-red-700'
+                    }`}
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"

@@ -14,7 +14,7 @@ export default function AboutPage() {
           <div className="mx-auto max-w-screen-xl px-4">
             <div className="text-center">
               <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                Tentang Dengue Checker
+                Tentang Awas DBD
               </h1>
               <p className="text-lg md:text-xl opacity-90 max-w-3xl mx-auto">
                 Sistem deteksi dini Demam Berdarah Dengue berbasis AI untuk membantu masyarakat Indonesia
@@ -37,16 +37,16 @@ export default function AboutPage() {
               <div>
                 <img
                   src="/dengue.png"
-                  alt="Dengue Checker"
+                  alt="Awas DBD"
                   className="w-full max-w-md mx-auto"
                 />
               </div>
               <div className="space-y-4 text-gray-700">
                 <p className="text-lg leading-relaxed">
-                  <strong className="text-red-700">Dengue Checker</strong> adalah aplikasi web inovatif yang dirancang untuk membantu deteksi dini Demam Berdarah Dengue (DBD) menggunakan teknologi Artificial Intelligence.
+                  <strong className="text-red-700">Awas DBD</strong> adalah aplikasi web inovatif yang dirancang untuk membantu deteksi dini Demam Berdarah Dengue (DBD) menggunakan teknologi Artificial Intelligence.
                 </p>
                 <p className="leading-relaxed">
-                  Dengan memanfaatkan algoritma Machine Learning seperti <strong>Logistic Regression</strong> dan <strong>Support Vector Machine (SVM)</strong>, aplikasi ini dapat memprediksi kemungkinan seseorang terkena DBD berdasarkan gejala klinis dan hasil laboratorium yang diinputkan.
+                  Dengan memanfaatkan algoritma Machine Learning seperti <strong>Support Vector Machine (SVM)</strong>, aplikasi ini dapat memprediksi kemungkinan seseorang terkena DBD berdasarkan gejala klinis dan hasil laboratorium yang diinputkan.
                 </p>
                 <p className="leading-relaxed">
                   DBD merupakan penyakit tropis yang serius dan dapat berakibat fatal jika tidak ditangani dengan cepat. Melalui aplikasi ini, kami berharap dapat membantu masyarakat untuk lebih waspada dan melakukan tindakan preventif sejak dini.
@@ -172,7 +172,7 @@ export default function AboutPage() {
                   Visualisasi Data
                 </h3>
                 <p className="text-gray-600">
-                  Peta interaktif yang menampilkan sebaran kasus DBD di Indonesia untuk meningkatkan awareness masyarakat.
+                  Chart dan grafik interaktif yang menampilkan statistik dari riwayat pemeriksaan Anda untuk monitoring perkembangan kesehatan.
                 </p>
               </div>
 
@@ -232,92 +232,7 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Team Section */}
-        <section className="py-16 bg-gray-50">
-          <div className="mx-auto max-w-screen-xl px-4">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                Tim Pengembang
-              </h2>
-              <div className="w-20 h-1 bg-red-700 mx-auto mb-6"></div>
-              <p className="text-gray-600 max-w-2xl mx-auto">
-                Dibangun oleh tim mahasiswa Universitas Teknologi Yogyakarta yang berdedikasi untuk membantu masyarakat
-              </p>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {/* Developer 1 */}
-              
-
-              {/* Developer 2 */}
-              <div className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
-                <div className="bg-gradient-to-r from-red-600 to-red-800 h-32"></div>
-                <div className="text-center -mt-16 pb-8 px-6">
-                  <div className="w-32 h-32 rounded-full bg-gray-200 border-4 border-white mx-auto mb-4 flex items-center justify-center overflow-hidden">
-                    <Image
-                      src="/images/zakki.jpg"
-                      alt="Zakki Farian"
-                      width={128}
-                      height={128}
-                      className="w-full h-auto text-gray-400"
-                    />
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">
-                    Zakki Farian
-                  </h3>
-                  <p className="text-red-700 font-medium mb-3">Machine Learning Engineer</p>
-                  <p className="text-gray-600 text-sm mb-4">
-                    Fokus pada pengembangan model AI dan data processing
-                  </p>
-                </div>
-              </div>
-
-              {/* Developer 3 */}
-              <div className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
-                <div className="bg-gradient-to-r from-red-600 to-red-800 h-32"></div>
-                <div className="text-center -mt-16 pb-8 px-6">
-                  <div className="w-32 h-32 rounded-full bg-gray-200 border-4 border-white mx-auto mb-4 flex items-center justify-center overflow-hidden">
-                    <Image
-                      src="/images/ridho.jpg"
-                      alt="Ridho Ardiansyah"
-                      width={128}
-                      height={128}
-                      className="w-full h-auto text-gray-400"
-                    />
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">
-                    Ridho Ardiansyah
-                  </h3>
-                  <p className="text-red-700 font-medium mb-3">UI/UX Designer & Developer</p>
-                  <p className="text-gray-600 text-sm mb-4">
-                    Merancang interface dan user experience aplikasi
-                  </p>
-                </div>
-              </div>
-              <div className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
-                <div className="bg-gradient-to-r from-red-600 to-red-800 h-32"></div>
-                <div className="text-center -mt-16 pb-8 px-6">
-                  <div className="w-32 h-32 rounded-full bg-gray-200 border-4 border-white mx-auto mb-4 flex items-center justify-center overflow-hidden">
-                    <Image
-                      src="/images/joko.jpg"
-                      alt="Joko Yuliyanto"
-                      width={128}
-                      height={128}
-                      className="w-full h-auto text-gray-400"
-                    />
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">
-                    Joko Yuliyanto
-                  </h3>
-                  <p className="text-red-700 font-medium mb-3">Full Stack Developer</p>
-                  <p className="text-gray-600 text-sm mb-4">
-                    Bertanggung jawab atas pengembangan frontend dan integrasi API
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
 
         {/* CTA Section */}
         <section className="py-16 bg-white">

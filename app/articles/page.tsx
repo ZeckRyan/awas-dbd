@@ -3,9 +3,11 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Navbar from '../components/Navbar'
+import { createClient } from '../../utils/supabase/client'
 
 // Interface untuk artikel berita
 interface NewsArticle {
+  id?: string
   title: string
   description: string
   url: string
@@ -18,50 +20,71 @@ interface NewsArticle {
 }
 
 export default function ArticlesPage() {
-  const [selectedCategory, setSelectedCategory] = useState('demam-berdarah')
+  const supabase = createClient()
+  const [selectedCategory, setSelectedCategory] = useState('Berita DBD Terbaru')
   const [articles, setArticles] = useState<NewsArticle[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
 
   const categories = [
-    { key: 'demam-berdarah', label: 'Berita DBD Terbaru' },
-    { key: 'pencegahan', label: 'Pencegahan DBD' },
-    { key: 'vaksin', label: 'Vaksin Dengue' },
-    { key: 'teknologi', label: 'Teknologi Deteksi' }
+    { key: 'Berita DBD Terbaru', label: 'Berita DBD Terbaru' },
+    { key: 'Pencegahan DBD', label: 'Pencegahan DBD' },
+    { key: 'Vaksin Dengue', label: 'Vaksin Dengue' },
+    { key: 'Teknologi Deteksi', label: 'Teknologi Deteksi' }
   ]
 
-  // Fetch berita DBD dari NewsData API
-  const fetchNews = async (query: string) => {
+  // Fetch artikel dari database
+  const fetchArticles = async (category: string) => {
     setIsLoading(true)
     setError('')
-    
+
     try {
-      const response = await fetch(`/api/news?q=${encodeURIComponent(query)}`)
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch news')
+      let query = supabase
+        .from('articles')
+        .select('*')
+        .order('published_at', { ascending: false })
+
+      if (category !== 'Berita DBD Terbaru') {
+        query = query.eq('category', category)
       }
-      
-      const data = await response.json()
-      setArticles(data.articles || [])
-    } catch (err) {
-      setError('Gagal memuat berita DBD. Silakan coba lagi nanti.')
-      console.error('Error fetching news:', err)
+
+      const { data, error: dbError } = await query
+
+      if (dbError) throw dbError
+
+      // Transform data ke format yang diharapkan
+      const transformedArticles = (data || []).map(article => ({
+        id: article.id,
+        title: article.title,
+        description: article.description || 'Baca selengkapnya di sumber berita...',
+        url: article.url,
+        urlToImage: article.image_url || '',
+        publishedAt: article.published_at || article.created_at,
+        source: {
+          name: article.source_name || 'News'
+        },
+        author: article.source_name || ''
+      }))
+
+      setArticles(transformedArticles)
+    } catch (err: any) {
+      setError('Gagal memuat artikel. Silakan coba lagi nanti.')
+      console.error('Error fetching articles:', err)
     } finally {
       setIsLoading(false)
     }
   }
 
   useEffect(() => {
-    fetchNews(selectedCategory)
+    fetchArticles(selectedCategory)
   }, [selectedCategory])
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr)
-    return date.toLocaleDateString('id-ID', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+    return date.toLocaleDateString('id-ID', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
     })
   }
 
@@ -69,20 +92,20 @@ export default function ArticlesPage() {
     const date = new Date(dateStr)
     const now = new Date()
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
-    
+
     if (diffInHours < 1) return 'Baru saja'
     if (diffInHours < 24) return `${diffInHours} jam yang lalu`
-    
+
     const diffInDays = Math.floor(diffInHours / 24)
     if (diffInDays < 7) return `${diffInDays} hari yang lalu`
-    
+
     return formatDate(dateStr)
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar active="articles" />
-      
+
       <div className="pt-20">
         {/* Header */}
         <div className="bg-gradient-to-r from-red-600 to-red-800 text-white">
@@ -107,11 +130,10 @@ export default function ArticlesPage() {
                 <button
                   key={category.key}
                   onClick={() => setSelectedCategory(category.key)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                    selectedCategory === category.key
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedCategory === category.key
                       ? 'bg-red-700 text-white shadow-lg'
                       : 'bg-white text-gray-700 border border-gray-300 hover:bg-red-50 hover:border-red-300'
-                  }`}
+                    }`}
                 >
                   {category.label}
                 </button>
@@ -123,7 +145,7 @@ export default function ArticlesPage() {
           {isLoading && (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-700 mx-auto"></div>
-              <p className="mt-4 text-gray-600">Memuat berita terbaru...</p>
+              <p className="mt-4 text-gray-600">Memuat artikel...</p>
             </div>
           )}
 
@@ -136,7 +158,7 @@ export default function ArticlesPage() {
               </h3>
               <p className="text-gray-600 mb-4">{error}</p>
               <button
-                onClick={() => fetchNews(selectedCategory)}
+                onClick={() => fetchArticles(selectedCategory)}
                 className="bg-red-700 text-white px-6 py-2 rounded-lg font-medium hover:bg-red-800 transition-colors"
               >
                 Coba Lagi
@@ -150,7 +172,7 @@ export default function ArticlesPage() {
               {articles.length > 0 ? (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                   {articles.map((article, index) => (
-                    <div key={index} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+                    <div key={article.id || index} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
                       <div className="aspect-video bg-gradient-to-r from-red-400 to-red-500 overflow-hidden">
                         {article.urlToImage ? (
                           <img
@@ -166,26 +188,26 @@ export default function ArticlesPage() {
                           <div className="w-full h-full flex items-center justify-center text-white text-6xl">📰</div>
                         )}
                       </div>
-                      
+
                       <div className="p-6">
                         <div className="flex items-center gap-4 mb-3 text-sm text-gray-600">
                           <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium">
                             {article.source.name}
                           </span>
-                          <span>📅 {getTimeAgo(article.publishedAt)}</span>
+                          <span>📅{getTimeAgo(article.publishedAt)}</span>
                         </div>
-                        
+
                         <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2 leading-tight">
                           {article.title}
                         </h3>
-                        
+
                         <p className="text-gray-600 mb-4 line-clamp-3">
-                          {article.description || 'Baca selengkapnya di sumber berita...'}
+                          {article.description}
                         </p>
-                        
+
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-gray-500">
-                            {article.author ? `👤 ${article.author}` : `📰 ${article.source.name}`}
+                            📰 {article.source.name}
                           </span>
                           <a
                             href={article.url}
@@ -207,10 +229,10 @@ export default function ArticlesPage() {
                 <div className="text-center py-12">
                   <div className="text-6xl mb-4">📄</div>
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    Tidak ada berita ditemukan
+                    Tidak ada artikel ditemukan
                   </h3>
                   <p className="text-gray-600">
-                    Tidak ada berita DBD ditemukan untuk kategori ini. Coba pilih kategori lain.
+                    Belum ada artikel untuk kategori ini. Admin akan segera menambahkan.
                   </p>
                 </div>
               )}
@@ -232,7 +254,7 @@ export default function ArticlesPage() {
                   className="inline-flex items-center gap-2 bg-red-700 text-white px-6 py-3 rounded-lg font-medium hover:bg-red-800 transition-colors"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   Cek Gejala DBD
                 </Link>
@@ -241,7 +263,7 @@ export default function ArticlesPage() {
                   className="inline-flex items-center gap-2 bg-white border border-red-300 text-red-700 px-6 py-3 rounded-lg font-medium hover:bg-red-50 transition-colors"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                   </svg>
                   Kembali ke Beranda
                 </Link>

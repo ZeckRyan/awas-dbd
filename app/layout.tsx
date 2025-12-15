@@ -1,9 +1,8 @@
 import type { Metadata } from 'next'
 import './globals.css'
-import Chatbot from './components/Chatbot'
 
 export const metadata: Metadata = {
-  title: 'Dengue Detector - Deteksi DBD Lebih Dini',
+  title: 'Awas DBD - Deteksi DBD Lebih Dini',
   description: 'Sistem deteksi Demam Berdarah Dengue (DBD) menggunakan AI',
 }
 
@@ -19,7 +18,6 @@ export default function RootLayout({
       </head>
       <body>
         {children}
-        <Chatbot />
       </body>
     </html>
   )

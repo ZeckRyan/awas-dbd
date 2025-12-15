@@ -37,7 +37,7 @@ export async function saveDengueCheck(data: DengueCheckData): Promise<{ success:
 
     // Get current user if logged in
     const { data: { user } } = await supabase.auth.getUser()
-    
+
     // Prepare data for insertion
     // Round numeric values to avoid precision overflow
     // PostgreSQL numeric type has precision limits
@@ -65,7 +65,7 @@ export async function saveDengueCheck(data: DengueCheckData): Promise<{ success:
     }
 
     const { data: result, error } = await supabase
-      .from('dengue_checks')
+      .from('examinations')
       .insert([checkData])
       .select()
       .single()
@@ -89,13 +89,13 @@ export async function getDengueCheckHistory(): Promise<{ success: boolean; data?
 
     // Get current user
     const { data: { user } } = await supabase.auth.getUser()
-    
+
     if (!user) {
       return { success: false, error: 'User not authenticated' }
     }
 
     const { data, error } = await supabase
-      .from('dengue_checks')
+      .from('examinations')
       .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
@@ -118,7 +118,7 @@ export async function getDengueCheckById(id: string): Promise<{ success: boolean
     const supabase = createClient()
 
     const { data, error } = await supabase
-      .from('dengue_checks')
+      .from('examinations')
       .select('*')
       .eq('id', id)
       .single()
@@ -142,13 +142,13 @@ export async function deleteDengueCheck(id: string): Promise<{ success: boolean;
 
     // Get current user
     const { data: { user } } = await supabase.auth.getUser()
-    
+
     if (!user) {
       return { success: false, error: 'User not authenticated' }
     }
 
     const { error } = await supabase
-      .from('dengue_checks')
+      .from('examinations')
       .delete()
       .eq('id', id)
       .eq('user_id', user.id) // Ensure user can only delete their own records

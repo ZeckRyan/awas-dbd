@@ -1,23 +1,17 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import Navbar from './components/Navbar'
 import { createClient } from '../utils/supabase/client'
 import { User } from '@supabase/supabase-js'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 
-const LeafletMap = dynamic(() => import('./components/LeafletMap'), {
-  ssr: false,
-  loading: () => (
-    <div className="flex items-center justify-center h-full">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-700 mx-auto mb-4"></div>
-        <p className="text-gray-500">Memuat komponen peta...</p>
-      </div>
-    </div>
-  ),
-})
+interface ChartData {
+  month: string
+  positif: number
+  negatif: number
+}
 
 // FAQ Accordion Component
 const FAQAccordion = () => {
@@ -108,9 +102,8 @@ const FAQAccordion = () => {
                 </h3>
               </div>
               <svg
-                className={`w-5 h-5 ${colors.text} transform transition-transform duration-200 ${
-                  isOpen ? 'rotate-180' : 'rotate-0'
-                }`}
+                className={`w-5 h-5 ${colors.text} transform transition-transform duration-200 ${isOpen ? 'rotate-180' : 'rotate-0'
+                  }`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -130,7 +123,7 @@ const FAQAccordion = () => {
                   </div>
                 ))}
               </div>
-              
+
               {/* Call to action di akhir setiap FAQ */}
               <div className="mt-4 pt-4 border-t border-opacity-30">
                 <p className="text-sm text-gray-600 mb-3">
@@ -141,7 +134,7 @@ const FAQAccordion = () => {
                   className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors shadow-md hover:shadow-lg"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   Cek Gejala Sekarang
                 </Link>
@@ -155,8 +148,8 @@ const FAQAccordion = () => {
 }
 
 export default function Home() {
-  const [plotData, setPlotData] = useState<any>(null)
-  const [isLoadingPlot, setIsLoadingPlot] = useState<boolean>(true)
+  const [chartData, setChartData] = useState<ChartData[]>([])
+  const [isLoadingChart, setIsLoadingChart] = useState<boolean>(true)
   const [isMounted, setIsMounted] = useState<boolean>(false)
   const [user, setUser] = useState<User | null>(null)
   const supabase = createClient()
@@ -180,20 +173,77 @@ export default function Home() {
       setUser(session?.user ?? null)
     })
 
-    // Load heatmap data
-    setIsLoadingPlot(true)
-    fetch('/heatmap_geo.json')
-      .then((response) => response.json())
-      .then((data) => {
-        setPlotData(data)
-        setIsLoadingPlot(false)
-      })
-      .catch(() => {
-        setIsLoadingPlot(false)
-      })
+    // Load chart data
+    fetchChartData()
 
     return () => subscription.unsubscribe()
   }, [supabase])
+
+  const fetchChartData = async () => {
+    setIsLoadingChart(true)
+
+    try {
+      // Fetch examinations with created_at
+      const { data: examinations } = await supabase
+        .from('examinations')
+        .select('prediction, created_at')
+        .order('created_at', { ascending: true })
+
+      if (!examinations || examinations.length === 0) {
+        // Set dummy data jika belum ada
+        setChartData([
+          { month: 'Jan', positif: 5, negatif: 45 },
+          { month: 'Feb', positif: 8, negatif: 52 },
+          { month: 'Mar', positif: 12, negatif: 48 },
+          { month: 'Apr', positif: 10, negatif: 60 },
+          { month: 'Mei', positif: 15, negatif: 55 },
+          { month: 'Jun', positif: 20, negatif: 70 },
+        ])
+        setIsLoadingChart(false)
+        return
+      }
+
+      // Group by month
+      const monthlyData: { [key: string]: { positif: number, negatif: number } } = {}
+
+      examinations.forEach(exam => {
+        const date = new Date(exam.created_at)
+        const monthKey = date.toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })
+
+        if (!monthlyData[monthKey]) {
+          monthlyData[monthKey] = { positif: 0, negatif: 0 }
+        }
+
+        if (exam.prediction === 1) {
+          monthlyData[monthKey].positif++
+        } else {
+          monthlyData[monthKey].negatif++
+        }
+      })
+
+      // Convert to array
+      const chartDataArray = Object.keys(monthlyData).map(month => ({
+        month: month,
+        positif: monthlyData[month].positif,
+        negatif: monthlyData[month].negatif
+      }))
+
+      setChartData(chartDataArray.length > 0 ? chartDataArray : [
+        { month: 'Jan', positif: 5, negatif: 45 },
+        { month: 'Feb', positif: 8, negatif: 52 },
+      ])
+    } catch (error) {
+      console.error('Error fetching chart data:', error)
+      // Set dummy data on error
+      setChartData([
+        { month: 'Jan', positif: 5, negatif: 45 },
+        { month: 'Feb', positif: 8, negatif: 52 },
+        { month: 'Mar', positif: 12, negatif: 48 },
+      ])
+    } finally {
+      setIsLoadingChart(false)
+    }
+  }
 
   return (
     <div>
@@ -206,33 +256,33 @@ export default function Home() {
             <svg className="w-full h-full" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
               <defs>
                 <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
-                  <circle cx="30" cy="30" r="2" fill="#dc2626"/>
+                  <circle cx="30" cy="30" r="2" fill="#dc2626" />
                 </pattern>
               </defs>
-              <rect width="100%" height="100%" fill="url(#grid)"/>
+              <rect width="100%" height="100%" fill="url(#grid)" />
             </svg>
           </div>
-          
+
           <div className="relative mx-auto max-w-screen-xl px-4 py-20">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center min-h-[80vh]">
-              
+
               {/* Left Content */}
               <div className="text-left space-y-6 lg:pr-8">
                 <div className="inline-flex items-center gap-2 bg-red-50 border border-red-200 px-4 py-2 rounded-full text-red-600 text-sm font-medium">
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   Deteksi Dini. Akurat. Terpercaya.
                 </div>
-                
+
                 <div className="space-y-4">
                   <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 leading-tight">
                     <span className="block">Deteksi DBD</span>
                     <span className="block text-red-600">lebih dini!</span>
                   </h1>
-                  
+
                   <p className="text-xl text-gray-600 leading-relaxed max-w-lg">
-                    Sistem AI canggih untuk membantu deteksi Demam Berdarah Dengue (DBD) 
+                    Sistem AI canggih untuk membantu deteksi Demam Berdarah Dengue (DBD)
                     lebih dini dengan akurasi tinggi
                   </p>
                 </div>
@@ -248,11 +298,11 @@ export default function Home() {
                       stroke="currentColor"
                       viewBox="0 0 24 24"
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     Mulai Pemeriksaan
                   </Link>
-                  
+
                   {user ? (
                     <Link
                       className="group flex items-center justify-center gap-3 bg-white border-2 border-red-300 text-red-700 px-8 py-4 rounded-xl font-semibold hover:bg-red-50 transform hover:scale-105 transition-all duration-300"
@@ -264,7 +314,7 @@ export default function Home() {
                         stroke="currentColor"
                         viewBox="0 0 24 24"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                       Lihat Riwayat
                     </Link>
@@ -279,7 +329,7 @@ export default function Home() {
                         stroke="currentColor"
                         viewBox="0 0 24 24"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
                       </svg>
                       Masuk
                     </Link>
@@ -298,34 +348,16 @@ export default function Home() {
                       stroke="currentColor"
                       viewBox="0 0 24 24"
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
                     </svg>
                     Baca Artikel Terbaru
                     <svg className="w-3 h-3 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </Link>
-                  
-                  {user && (
-                    <Link
-                      href="/checklist"
-                      className="group flex items-center gap-2 text-gray-600 hover:text-red-700 font-medium transition-colors"
-                    >
-                      <svg
-                        className="w-4 h-4 group-hover:scale-110 transition-transform"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                      </svg>
-                      Misi Mingguan
-                      <svg className="w-3 h-3 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/>
-                      </svg>
-                    </Link>
-                  )}
-                  
+
+
+
                   {user && (
                     <Link
                       href="/profile"
@@ -337,15 +369,15 @@ export default function Home() {
                         stroke="currentColor"
                         viewBox="0 0 24 24"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                       </svg>
-                      Misi & Badges
+                      Profile
                       <svg className="w-3 h-3 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
                     </Link>
                   )}
-                  
+
                   <Link
                     href="/about"
                     className="group flex items-center gap-2 text-gray-600 hover:text-red-700 font-medium transition-colors"
@@ -356,11 +388,11 @@ export default function Home() {
                       stroke="currentColor"
                       viewBox="0 0 24 24"
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     Pelajari Lebih Lanjut
                     <svg className="w-3 h-3 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </Link>
                 </div>
@@ -389,46 +421,46 @@ export default function Home() {
                   <div className="relative w-80 h-80 lg:w-96 lg:h-96 mx-auto">
                     <div className="absolute inset-0 bg-gradient-to-br from-red-500 to-red-600 rounded-full shadow-xl opacity-10"></div>
                     <div className="absolute inset-4 bg-gradient-to-br from-red-400 to-red-500 rounded-full opacity-20"></div>
-                    
+
                     {/* Main Mosquito Illustration */}
                     <div className="absolute inset-16 flex items-center justify-center">
                       <div className="text-red-500 transform rotate-12 animate-pulse">
                         <svg className="w-40 h-40 lg:w-48 lg:h-48" fill="currentColor" viewBox="0 0 512 512">
-                          <path d="M463.1 474.7c-4.2-4.7-9.6-7.2-15.8-7.2s-11.6 2.5-15.8 7.2l-55.5 62.1c-8.4 9.4-8.4 23.7 0 33.1 8.4 9.4 22.1 9.4 30.5 0l55.5-62.1c8.4-9.4 8.4-23.7 0-33.1zM256 320c-88.4 0-160-71.6-160-160S167.6 0 256 0s160 71.6 160 160-71.6 160-160 160zm0-288c-70.7 0-128 57.3-128 128s57.3 128 128 128 128-57.3 128-128S326.7 32 256 32z"/>
-                          <circle cx="256" cy="160" r="48"/>
-                          <path d="M432 160c0-97.2-78.8-176-176-176S80 62.8 80 160c0 41.8 14.6 80.1 39 110.1L256 416l137-145.9c24.4-30 39-68.3 39-110.1z"/>
+                          <path d="M463.1 474.7c-4.2-4.7-9.6-7.2-15.8-7.2s-11.6 2.5-15.8 7.2l-55.5 62.1c-8.4 9.4-8.4 23.7 0 33.1 8.4 9.4 22.1 9.4 30.5 0l55.5-62.1c8.4-9.4 8.4-23.7 0-33.1zM256 320c-88.4 0-160-71.6-160-160S167.6 0 256 0s160 71.6 160 160-71.6 160-160 160zm0-288c-70.7 0-128 57.3-128 128s57.3 128 128 128 128-57.3 128-128S326.7 32 256 32z" />
+                          <circle cx="256" cy="160" r="48" />
+                          <path d="M432 160c0-97.2-78.8-176-176-176S80 62.8 80 160c0 41.8 14.6 80.1 39 110.1L256 416l137-145.9c24.4-30 39-68.3 39-110.1z" />
                         </svg>
                       </div>
                     </div>
-                    
+
                     {/* Medical Icons around mosquito */}
                     <div className="absolute top-8 left-1/2 transform -translate-x-1/2 text-red-400 animate-bounce">
                       <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                       </svg>
                     </div>
-                    
+
                     {/* Blood drop */}
                     <div className="absolute top-16 right-12 text-red-500 animate-pulse">
                       <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2s-8 8.5-8 12a8 8 0 1 0 16 0c0-3.5-8-12-8-12z"/>
+                        <path d="M12 2s-8 8.5-8 12a8 8 0 1 0 16 0c0-3.5-8-12-8-12z" />
                       </svg>
                     </div>
-                    
+
                     {/* Temperature/thermometer */}
                     <div className="absolute bottom-16 left-12 text-red-400 animate-pulse" style={{ animationDelay: '0.5s' }}>
                       <svg className="w-10 h-10" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M15 13V5a3 3 0 0 0-6 0v8a5 5 0 1 0 6 0zM12 4a1 1 0 0 1 1 1v7.5a3 3 0 1 1-2 0V5a1 1 0 0 1 1-1z"/>
+                        <path d="M15 13V5a3 3 0 0 0-6 0v8a5 5 0 1 0 6 0zM12 4a1 1 0 0 1 1 1v7.5a3 3 0 1 1-2 0V5a1 1 0 0 1 1-1z" />
                       </svg>
                     </div>
-                    
+
                     {/* Medical cross */}
                     <div className="absolute bottom-8 right-16 text-red-300 animate-pulse" style={{ animationDelay: '1s' }}>
                       <svg className="w-10 h-10" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
                       </svg>
                     </div>
-                    
+
                     {/* Virus particle */}
                     <div className="absolute top-20 left-8 text-red-300 animate-bounce" style={{ animationDelay: '1.5s' }}>
                       <div className="relative w-8 h-8 bg-current rounded-full opacity-60">
@@ -438,38 +470,38 @@ export default function Home() {
                         <div className="absolute -bottom-1 -right-1 w-2 h-2 bg-current rounded-full"></div>
                       </div>
                     </div>
-                    
+
                     {/* Heart pulse */}
                     <div className="absolute bottom-20 right-8 text-red-400 animate-pulse" style={{ animationDelay: '2s' }}>
                       <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
                       </svg>
                     </div>
-                    
+
                     {/* DNA strand */}
                     <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-red-200 animate-spin" style={{ animationDuration: '10s' }}>
                       <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M4 4h4v4H4V4zm6 0h4v4h-4V4zm6 0h4v4h-4V4zM4 10h4v4H4v-4zm6 0h4v4h-4v-4zm6 0h4v4h-4v-4zM4 16h4v4H4v-4zm6 0h4v4h-4v-4zm6 0h4v4h-4v-4z"/>
+                        <path d="M4 4h4v4H4V4zm6 0h4v4h-4V4zm6 0h4v4h-4V4zM4 10h4v4H4v-4zm6 0h4v4h-4v-4zm6 0h4v4h-4v-4zM4 16h4v4H4v-4zm6 0h4v4h-4v-4zm6 0h4v4h-4v-4z" />
                       </svg>
                     </div>
                   </div>
-                  
+
                   {/* Floating decorative elements */}
                   <div className="absolute -top-4 left-1/4 text-red-300 animate-float">
                     <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                      <circle cx="12" cy="12" r="3"/>
+                      <circle cx="12" cy="12" r="3" />
                     </svg>
                   </div>
-                  
+
                   <div className="absolute -right-4 top-1/3 text-red-200 animate-bounce" style={{ animationDelay: '0.7s' }}>
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <circle cx="12" cy="12" r="2"/>
+                      <circle cx="12" cy="12" r="2" />
                     </svg>
                   </div>
-                  
+
                   <div className="absolute -left-6 bottom-1/4 text-red-300 animate-pulse" style={{ animationDelay: '1.3s' }}>
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                      <circle cx="12" cy="12" r="2.5"/>
+                      <circle cx="12" cy="12" r="2.5" />
                     </svg>
                   </div>
                 </div>
@@ -491,7 +523,7 @@ export default function Home() {
             </p>
             <div className="inline-flex items-center gap-2 bg-red-50 border border-red-200 px-4 py-2 rounded-full text-red-600 text-sm font-medium">
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM9 7a1 1 0 11-2 0 1 1 0 012 0zM7 10a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1H8a1 1 0 01-1-1v-3z"/>
+                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM9 7a1 1 0 11-2 0 1 1 0 012 0zM7 10a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1H8a1 1 0 01-1-1v-3z" />
               </svg>
               Metode 3M Plus - Cara Terbukti Efektif
             </div>
@@ -503,8 +535,8 @@ export default function Home() {
               <div className="text-center">
                 <div className="w-14 h-14 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center group-hover:bg-red-200 transition-colors">
                   <svg className="w-7 h-7 text-red-700" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2s-8 8.5-8 12a8 8 0 1 0 16 0c0-3.5-8-12-8-12zm0 18a6 6 0 0 1-6-6c0-2.17 3.5-6.5 6-9.47C14.5 7.5 18 11.83 18 14a6 6 0 0 1-6 6z"/>
-                    <circle cx="12" cy="14" r="2" fill="white"/>
+                    <path d="M12 2s-8 8.5-8 12a8 8 0 1 0 16 0c0-3.5-8-12-8-12zm0 18a6 6 0 0 1-6-6c0-2.17 3.5-6.5 6-9.47C14.5 7.5 18 11.83 18 14a6 6 0 0 1-6 6z" />
+                    <circle cx="12" cy="14" r="2" fill="white" />
                   </svg>
                 </div>
                 <h3 className="text-base font-semibold text-gray-900 mb-2">
@@ -524,9 +556,9 @@ export default function Home() {
               <div className="text-center">
                 <div className="w-14 h-14 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center group-hover:bg-red-200 transition-colors">
                   <svg className="w-7 h-7 text-red-700" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/>
-                    <path d="M7 10h10v7H7z" opacity="0.6"/>
-                    <path d="M9 7h6v2H9z"/>
+                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z" />
+                    <path d="M7 10h10v7H7z" opacity="0.6" />
+                    <path d="M9 7h6v2H9z" />
                   </svg>
                 </div>
                 <h3 className="text-base font-semibold text-gray-900 mb-2">
@@ -546,8 +578,8 @@ export default function Home() {
               <div className="text-center">
                 <div className="w-14 h-14 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center group-hover:bg-red-200 transition-colors">
                   <svg className="w-7 h-7 text-red-700" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2v6l4-4-4-4zM21 9l-4 4 4 4v-8zM12 22v-6l-4 4 4 4zM3 15l4-4-4-4v8z"/>
-                    <circle cx="12" cy="12" r="2" opacity="0.6"/>
+                    <path d="M12 2v6l4-4-4-4zM21 9l-4 4 4 4v-8zM12 22v-6l-4 4 4 4zM3 15l4-4-4-4v8z" />
+                    <circle cx="12" cy="12" r="2" opacity="0.6" />
                   </svg>
                 </div>
                 <h3 className="text-base font-semibold text-gray-900 mb-2">
@@ -567,8 +599,8 @@ export default function Home() {
               <div className="text-center">
                 <div className="w-14 h-14 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center group-hover:bg-red-200 transition-colors">
                   <svg className="w-7 h-7 text-red-700" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-                    <circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.3"/>
+                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                    <circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.3" />
                   </svg>
                 </div>
                 <h3 className="text-base font-semibold text-gray-900 mb-2">
@@ -591,7 +623,7 @@ export default function Home() {
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
                   <svg className="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"/>
+                    <path d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" />
                   </svg>
                 </div>
                 <h3 className="text-lg font-semibold text-red-800">Waspadai Gejala DBD</h3>
@@ -625,8 +657,8 @@ export default function Home() {
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
                   <svg className="w-5 h-5 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M10 2L3 7v11c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V7l-7-5z"/>
-                    <path d="M9 10h2v6H9v-6zm0-4h2v2H9V6z" fill="white"/>
+                    <path d="M10 2L3 7v11c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V7l-7-5z" />
+                    <path d="M9 10h2v6H9v-6zm0-4h2v2H9V6z" fill="white" />
                   </svg>
                 </div>
                 <h3 className="text-lg font-semibold text-yellow-800">Segera ke Dokter Jika</h3>
@@ -656,7 +688,7 @@ export default function Home() {
             </div>
           </div>
 
-          
+
         </div>
       </section>
 
@@ -683,43 +715,93 @@ export default function Home() {
         <div className="mx-auto max-w-screen-xl px-4 py-20 w-full">
           <div className="text-center mb-10">
             <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-3">
-              Peta Sebaran DBD di Indonesia
+              Trend Kasus DBD di Indonesia
             </h2>
             <p className="text-gray-600">
-              Visualisasi data kasus DBD berdasarkan lokasi geografis
+              Grafik perkembangan kasus positif dan negatif DBD per bulan
             </p>
           </div>
-          
-          <div
-            id="chart"
-            className="chart mx-auto w-full bg-white rounded-lg shadow-lg p-6"
-            style={{ minHeight: 600, height: 600, width: '100%' }}
-          >
-            {isLoadingPlot && (
-              <div className="flex items-center justify-center h-full">
+
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            {isLoadingChart && (
+              <div className="flex items-center justify-center" style={{ height: 400 }}>
                 <div className="text-center">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-700 mx-auto mb-4"></div>
-                  <p className="text-gray-500">Memuat peta Indonesia...</p>
+                  <p className="text-gray-500">Memuat data trend...</p>
                 </div>
               </div>
             )}
-            {!isLoadingPlot && !plotData && (
-              <div className="flex items-center justify-center h-full">
-                <div className="text-center">
-                  <svg className="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                  </svg>
-                  <p className="text-red-500 font-medium">Gagal memuat data peta</p>
-                  <p className="text-gray-500 text-sm mt-2">Silakan refresh halaman atau coba lagi nanti</p>
-                </div>
+
+            {!isLoadingChart && (
+              <div className="w-full" style={{ height: 400 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis
+                      dataKey="month"
+                      tick={{ fill: '#6B7280' }}
+                      tickLine={{ stroke: '#6B7280' }}
+                    />
+                    <YAxis
+                      tick={{ fill: '#6B7280' }}
+                      tickLine={{ stroke: '#6B7280' }}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: '#fff',
+                        border: '1px solid #E5E7EB',
+                        borderRadius: '8px',
+                        padding: '12px'
+                      }}
+                    />
+                    <Legend
+                      wrapperStyle={{
+                        paddingTop: '20px'
+                      }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="positif"
+                      stroke="#DC2626"
+                      strokeWidth={3}
+                      name="Positif DBD"
+                      dot={{ fill: '#DC2626', r: 5 }}
+                      activeDot={{ r: 7 }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="negatif"
+                      stroke="#10B981"
+                      strokeWidth={3}
+                      name="Negatif DBD"
+                      dot={{ fill: '#10B981', r: 5 }}
+                      activeDot={{ r: 7 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
               </div>
             )}
-            {!isLoadingPlot && plotData && isMounted && (
-              <LeafletMap
-                data={plotData.data}
-                layout={plotData.layout}
-              />
-            )}
+
+            <div className="mt-6 grid grid-cols-2 gap-4">
+              <div className="bg-red-50 rounded-lg p-4 border border-red-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-3 h-3 bg-red-600 rounded-full"></div>
+                  <p className="text-sm font-semibold text-gray-700">Trend Positif</p>
+                </div>
+                <p className="text-xs text-gray-600">
+                  Pantau peningkatan kasus untuk antisipasi dini
+                </p>
+              </div>
+              <div className="bg-green-50 rounded-lg p-4 border border-green-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-3 h-3 bg-green-600 rounded-full"></div>
+                  <p className="text-sm font-semibold text-gray-700">Trend Negatif</p>
+                </div>
+                <p className="text-xs text-gray-600">
+                  Indikator efektivitas pencegahan di masyarakat
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -732,11 +814,11 @@ export default function Home() {
               Fitur Unggulan
             </h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              Platform komprehensif untuk deteksi, pencegahan, dan edukasi DBD dengan teknologi AI dan gamifikasi
+              Platform komprehensif untuk deteksi, pencegahan, dan edukasi DBD dengan teknologi AI
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Feature 1 - AI Detection */}
             <div className="text-center p-6 rounded-lg border-2 border-red-200 bg-red-50 hover:border-red-400 hover:shadow-lg transition-all">
               <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -762,7 +844,7 @@ export default function Home() {
               </p>
             </div>
 
-            {/* Feature 2 - Weekly Missions */}
+            {/* Feature 2 - News Aggregator */}
             <div className="text-center p-6 rounded-lg border-2 border-red-200 bg-red-50 hover:border-red-400 hover:shadow-lg transition-all">
               <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg
@@ -775,59 +857,10 @@ export default function Home() {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 >
-                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                </svg>
-              </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">
-                Misi Mingguan
-              </h3>
-              <p className="text-gray-600 text-sm">
-                Checklist interaktif pencegahan DBD dengan tracking progress dan reward
-              </p>
-            </div>
-
-            {/* Feature 3 - Achievement System */}
-            <div className="text-center p-6 rounded-lg border-2 border-red-200 bg-red-50 hover:border-red-400 hover:shadow-lg transition-all">
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-8 h-8 text-red-700"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <circle cx="12" cy="8" r="7"/>
-                  <polyline points="8.21,13.89 7,23 12,20 17,23 15.79,13.88"/>
-                </svg>
-              </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">
-                Sistem Badges
-              </h3>
-              <p className="text-gray-600 text-sm">
-                Kumpulkan badges untuk konsistensi pencegahan dan pencapaian milestone
-              </p>
-            </div>
-
-            {/* Feature 4 - News Aggregator */}
-            <div className="text-center p-6 rounded-lg border-2 border-red-200 bg-red-50 hover:border-red-400 hover:shadow-lg transition-all">
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-8 h-8 text-red-700"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/>
-                  <path d="M18 14h-8"/>
-                  <path d="M15 18h-5"/>
-                  <path d="M10 6h8"/>
+                  <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2" />
+                  <path d="M18 14h-8" />
+                  <path d="M15 18h-5" />
+                  <path d="M10 6h8" />
                 </svg>
               </div>
               <h3 className="text-lg font-bold text-gray-900 mb-2">
@@ -907,8 +940,8 @@ export default function Home() {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 >
-                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
-                  <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                  <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
                 </svg>
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">
@@ -991,12 +1024,12 @@ export default function Home() {
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center gap-3 mb-4">
                 <img src="/dengue.png" className="h-10" alt="UTY Logo" />
-                <h3 className="text-xl font-bold">Dengue Checker</h3>
+                <h3 className="text-xl font-bold">Awas DBD</h3>
               </div>
               <p className="text-gray-400 mb-4">
                 Sistem deteksi dini Demam Berdarah Dengue berbasis AI untuk membantu masyarakat Indonesia mendapatkan diagnosa lebih cepat dan akurat.
               </p>
-             
+
             </div>
 
             {/* Column 2: Quick Links */}
@@ -1071,7 +1104,7 @@ export default function Home() {
 
           {/* Bottom Bar */}
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; {new Date().getFullYear()} Dengue Checker - Universitas Teknologi Yogyakarta. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} Awas DBD. All rights reserved.</p>
           </div>
         </div>
       </footer>
