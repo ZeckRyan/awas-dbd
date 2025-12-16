@@ -62,11 +62,28 @@
 - Login dengan email/password atau Google OAuth
 - Riwayat pemeriksaan tersimpan untuk user terdaftar
 - Mode anonim untuk privasi maksimal
+- Role-based access control (Admin/User)
 
 ### 📁 Riwayat Pemeriksaan
 - Simpan semua hasil pemeriksaan
-- Download hasil dalam format PDF/Image
+- Download hasil dalam format PDF menggunakan jsPDF
 - Monitoring kesehatan dari waktu ke waktu
+- Filter berdasarkan status hasil
+
+### 👨‍💼 Dashboard Admin
+- Panel khusus untuk admin
+- Manajemen artikel edukasi
+- Monitoring sistem
+
+### 📰 Konten Edukasi
+- Artikel informatif tentang DBD
+- Tips pencegahan dan perawatan
+- Informasi kesehatan terkini
+
+### ✏️ Manajemen Profil
+- Edit profil pengguna
+- Update nama dan password
+- Avatar dengan inisial otomatis
 
 ### 📱 Responsive Design
 - Optimal di desktop, tablet, dan mobile
@@ -87,8 +104,8 @@ Pastikan Anda sudah menginstal:
 ### Langkah 1: Clone Repository
 
 ```bash
-git clone https://github.com/aliepratama/dengue-checker-nextjs.git
-cd dengue-checker-nextjs
+git clone https://github.com/ZeckRyan/awas-dbd-dfe.git
+cd awas-dbd
 ```
 
 ### Langkah 2: Install Dependencies
@@ -106,53 +123,88 @@ bun install
 3. Isi nama project, password database, dan pilih region (Southeast Asia untuk Indonesia)
 4. Tunggu setup selesai (~2 menit)
 
-#### 3.2 Aktifkan Google OAuth (Opsional)
+#### 3.2 Setup Database Tables
 
-Untuk fitur login dengan Google:
+**PENTING**: Gunakan file `supabase_role_setup.sql` yang sudah disediakan di root project untuk setup database yang lengkap.
 
-1. Buka project Anda di Supabase Dashboard
-2. Navigasi ke **Authentication** → **Providers**
-3. Enable **Google** provider
-4. Dapatkan Google OAuth credentials:
-   - Buka [Google Cloud Console](https://console.cloud.google.com/)
-   - Buat OAuth 2.0 Client ID
-   - Tambahkan redirect URI: `https://[PROJECT-ID].supabase.co/auth/v1/callback`
-5. Paste Client ID dan Secret ke Supabase
-
-#### 3.3 Setup Database Tables
-
-Jalankan SQL berikut di Supabase SQL Editor:
+Atau jalankan SQL berikut di Supabase SQL Editor:
 
 ```sql
--- Table untuk menyimpan profil user
-CREATE TABLE user_profiles (
-  id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
+-- Table untuk menyimpan profil user dengan role
+CREATE TABLE IF NOT EXISTS profiles (
+  id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
+  email TEXT,
   full_name TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
+  role TEXT DEFAULT 'user' CHECK (role IN ('user', 'admin')),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+CREATE INDEX IF NOT EXISTS idx_profiles_role ON profiles(role);
+
 -- Table untuk menyimpan riwayat pemeriksaan
-CREATE TABLE examinations (
+CREATE TABLE IF NOT EXISTS examinations (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID REFERENCES auth.users ON DELETE CASCADE,
-  form_data JSONB NOT NULL,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  
+  -- Data demam
+  kdema TEXT NOT NULL,
+  ddema NUMERIC,
+  suhun NUMERIC,
+  
+  -- Data laboratorium
+  ulabo TEXT NOT NULL,
+  jwbcs NUMERIC,
+  hemog NUMERIC,
+  hemat NUMERIC,
+  jplat NUMERIC,
+  
+  -- Gejala klinis
+  skpla TEXT,
+  nymat TEXT,
+  nysen TEXT,
+  rsmul TEXT,
+  hinfm TEXT,
+  nyper TEXT,
+  mumun TEXT,
+  mdiar TEXT,
+  
+  -- Hasil prediksi
   prediction INTEGER NOT NULL,
-  probability FLOAT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
+  probability NUMERIC,
+  model_used TEXT,
+  
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Enable Row Level Security
-ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE examinations ENABLE ROW LEVEL SECURITY;
 
--- Policies untuk user_profiles
+-- Policies untuk profiles
 CREATE POLICY "Users can view own profile"
-  ON user_profiles FOR SELECT
+  ON profiles FOR SELECT
   USING (auth.uid() = id);
 
 CREATE POLICY "Users can update own profile"
-  ON user_profiles FOR UPDATE
-  USING (auth.uid() = id);
+  ON profiles FOR UPDATE
+  USING (auth.uid() = id)
+  WITH CHECK (
+    auth.uid() = id AND 
+    role = (SELECT role FROM profiles WHERE id = auth.uid())
+  );
+
+CREATE POLICY "Admins can view all profiles"
+  ON profiles FOR SELECT
+  USING ((SELECT role FROM profiles WHERE id = auth.uid()) = 'admin');
+
+CREATE POLICY "Admins can update all profiles"
+  ON profiles FOR UPDATE
+  USING ((SELECT role FROM profiles WHERE id = auth.uid()) = 'admin');
+
+CREATE POLICY "Users can insert own profile"
+  ON profiles FOR INSERT
+  WITH CHECK (auth.uid() = id);
 
 -- Policies untuk examinations
 CREATE POLICY "Users can view own examinations"
@@ -161,214 +213,36 @@ CREATE POLICY "Users can view own examinations"
 
 CREATE POLICY "Users can create examinations"
   ON examinations FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
+  WITH CHECK (auth.uid() = user_id OR user_id IS NULL);
 
--- Tambahkan table untuk menyimpan profile user yang lebih detail
-CREATE TABLE IF NOT EXISTS user_profiles (
-    id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
-    full_name TEXT,
-    avatar_url TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- Enable RLS untuk user_profiles
-ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
-
--- RLS Policy untuk user_profiles - user hanya bisa akses profile mereka sendiri
-CREATE POLICY "Users can view own profile" ON user_profiles
-    FOR SELECT USING (auth.uid() = id);
-
-CREATE POLICY "Users can update own profile" ON user_profiles
-    FOR UPDATE USING (auth.uid() = id);
-
-CREATE POLICY "Users can insert own profile" ON user_profiles
-    FOR INSERT WITH CHECK (auth.uid() = id);
-
--- Trigger untuk auto-update updated_at pada user_profiles
-CREATE OR REPLACE FUNCTION update_user_profiles_updated_at()
+-- Function untuk auto-create profile
+CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-    NEW.updated_at = NOW();
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER update_user_profiles_updated_at
-    BEFORE UPDATE ON user_profiles
-    FOR EACH ROW
-    EXECUTE FUNCTION update_user_profiles_updated_at();
-
--- Function untuk otomatis membuat profile ketika user baru register
-CREATE OR REPLACE FUNCTION create_user_profile()
-RETURNS TRIGGER AS $$
-BEGIN
-    INSERT INTO user_profiles (id, full_name)
-    VALUES (
-        NEW.id,
-        COALESCE(NEW.raw_user_meta_data->>'full_name', 'User')
-    );
-    RETURN NEW;
+  INSERT INTO public.profiles (id, email, full_name, role, created_at)
+  VALUES (
+    NEW.id,
+    NEW.email,
+    COALESCE(NEW.raw_user_meta_data->>'full_name', ''),
+    'user',
+    NOW()
+  )
+  ON CONFLICT (id) DO NOTHING;
+  RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Trigger untuk auto-create profile ketika user baru register
-DROP TRIGGER IF EXISTS create_user_profile_trigger ON auth.users;
-CREATE TRIGGER create_user_profile_trigger
-    AFTER INSERT ON auth.users
-    FOR EACH ROW
-    EXECUTE FUNCTION create_user_profile();
-
--- Update existing users yang belum punya profile (optional, untuk existing users)
-INSERT INTO user_profiles (id, full_name)
-SELECT id, COALESCE(raw_user_meta_data->>'full_name', 'User')
-FROM auth.users
-WHERE id NOT IN (SELECT id FROM user_profiles)
-ON CONFLICT (id) DO NOTHING;
-
--- Table untuk menyimpan progress checklist pencegahan mingguan
-CREATE TABLE IF NOT EXISTS weekly_prevention_progress (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    week_start DATE NOT NULL,
-    completed_items TEXT[] NOT NULL DEFAULT '{}',
-    total_items INTEGER NOT NULL DEFAULT 8,
-    completion_percentage INTEGER NOT NULL DEFAULT 0,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW(),
-    
-    -- Constraint untuk memastikan satu user hanya punya satu record per minggu
-    UNIQUE(user_id, week_start)
-);
-
--- Index untuk performa query
-CREATE INDEX IF NOT EXISTS idx_weekly_prevention_user_id ON weekly_prevention_progress(user_id);
-CREATE INDEX IF NOT EXISTS idx_weekly_prevention_week_start ON weekly_prevention_progress(week_start);
-CREATE INDEX IF NOT EXISTS idx_weekly_prevention_user_week ON weekly_prevention_progress(user_id, week_start);
-
--- Function untuk update timestamp otomatis
-CREATE OR REPLACE FUNCTION update_weekly_prevention_updated_at()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = NOW();
-    RETURN NEW;
-END;
-$$ language 'plpgsql';
-
--- Trigger untuk auto-update updated_at
-CREATE OR REPLACE TRIGGER update_weekly_prevention_updated_at 
-    BEFORE UPDATE ON weekly_prevention_progress 
-    FOR EACH ROW 
-    EXECUTE FUNCTION update_weekly_prevention_updated_at();
-
--- RLS Policy untuk keamanan
-ALTER TABLE weekly_prevention_progress ENABLE ROW LEVEL SECURITY;
-
--- Policy untuk user hanya bisa akses data mereka sendiri
-CREATE POLICY "Users can view their own prevention progress" ON weekly_prevention_progress
-    FOR SELECT USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can insert their own prevention progress" ON weekly_prevention_progress
-    FOR INSERT WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Users can update their own prevention progress" ON weekly_prevention_progress
-    FOR UPDATE USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can delete their own prevention progress" ON weekly_prevention_progress
-    FOR DELETE USING (auth.uid() = user_id);
-
--- Grant permissions
-GRANT SELECT, INSERT, UPDATE, DELETE ON weekly_prevention_progress TO authenticated;
-
--- Table untuk menyimpan achievement/pencapaian user
-CREATE TABLE IF NOT EXISTS user_achievements (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    achievement_type VARCHAR(50) NOT NULL,
-    achievement_name VARCHAR(100) NOT NULL,
-    description TEXT,
-    earned_at TIMESTAMPTZ DEFAULT NOW(),
-    week_start DATE,
-    
-    -- Constraint untuk memastikan satu user tidak bisa dapat achievement yang sama di minggu yang sama
-    UNIQUE(user_id, achievement_type, week_start)
-);
-
--- Index untuk achievements
-CREATE INDEX IF NOT EXISTS idx_user_achievements_user_id ON user_achievements(user_id);
-CREATE INDEX IF NOT EXISTS idx_user_achievements_type ON user_achievements(achievement_type);
-
--- RLS Policy untuk achievements
-ALTER TABLE user_achievements ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Users can view their own achievements" ON user_achievements
-    FOR SELECT USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can insert their own achievements" ON user_achievements
-    FOR INSERT WITH CHECK (auth.uid() = user_id);
-
--- Grant permissions
-GRANT SELECT, INSERT ON user_achievements TO authenticated;
-
--- Function untuk auto-create achievements berdasarkan progress
-CREATE OR REPLACE FUNCTION create_achievement_on_progress()
-RETURNS TRIGGER AS $$
-BEGIN
-    -- Achievement untuk first time completion
-    IF NEW.completion_percentage > 0 AND (
-        OLD IS NULL OR OLD.completion_percentage = 0
-    ) THEN
-        INSERT INTO user_achievements (user_id, achievement_type, achievement_name, description, week_start)
-        VALUES (
-            NEW.user_id, 
-            'first_steps', 
-            'Langkah Pertama', 
-            'Menyelesaikan checklist pencegahan pertama kali',
-            NEW.week_start
-        )
-        ON CONFLICT (user_id, achievement_type, week_start) DO NOTHING;
-    END IF;
-    
-    -- Achievement untuk 50% completion
-    IF NEW.completion_percentage >= 50 AND (
-        OLD IS NULL OR OLD.completion_percentage < 50
-    ) THEN
-        INSERT INTO user_achievements (user_id, achievement_type, achievement_name, description, week_start)
-        VALUES (
-            NEW.user_id, 
-            'halfway_hero', 
-            'Pahlawan Setengah Jalan', 
-            'Menyelesaikan 50% checklist pencegahan',
-            NEW.week_start
-        )
-        ON CONFLICT (user_id, achievement_type, week_start) DO NOTHING;
-    END IF;
-    
-    -- Achievement untuk 100% completion
-    IF NEW.completion_percentage = 100 AND (
-        OLD IS NULL OR OLD.completion_percentage < 100
-    ) THEN
-        INSERT INTO user_achievements (user_id, achievement_type, achievement_name, description, week_start)
-        VALUES (
-            NEW.user_id, 
-            'perfect_week', 
-            'Minggu Sempurna', 
-            'Menyelesaikan 100% checklist pencegahan',
-            NEW.week_start
-        )
-        ON CONFLICT (user_id, achievement_type, week_start) DO NOTHING;
-    END IF;
-    
-    RETURN NEW;
-END;
-$$ language 'plpgsql';
-
--- Trigger untuk create achievements otomatis
-CREATE OR REPLACE TRIGGER create_achievements_trigger
-    AFTER INSERT OR UPDATE ON weekly_prevention_progress
-    FOR EACH ROW
-    EXECUTE FUNCTION create_achievement_on_progress();
+-- Trigger untuk auto-create profile
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_new_user();
 ```
+
+**Membuat Admin User:**
+
+Untuk membuatnya register sebagai user user dulu lalu dijadikan admin secara manual via supabase
 
 ### Langkah 4: Konfigurasi Environment Variables
 
@@ -415,7 +289,6 @@ bun start
 
 1. **Akses Homepage**
    - Buka http://localhost:3000
-   - Lihat peta sebaran DBD di Indonesia
    - Klik tombol **"Periksa"**
 
 2. **Isi Formulir Pemeriksaan**
@@ -454,10 +327,14 @@ bun start
 | **Framework** | Next.js 15 (App Router) |
 | **Language** | TypeScript |
 | **Styling** | Tailwind CSS 4 |
+| **UI Components** | Flowbite, Flowbite React |
 | **Authentication** | Supabase Auth |
 | **Database** | Supabase (PostgreSQL) |
-| **Maps** | Leaflet, Plotly.js |
-| **Machine Learning** | Logistic Regression, SVM |
+| **Maps** | Leaflet, React Leaflet |
+| **Charts** | Plotly.js, Recharts |
+| **PDF Generation** | jsPDF |
+| **Icons** | React Icons |
+| **Machine Learning** | Logistic Regression, SVM (scikitjs) |
 | **Package Manager** | Bun |
 | **Deployment** | Vercel (recommended) |
 
@@ -466,37 +343,55 @@ bun start
 ## 📂 Struktur Project
 
 ```
-dengue-checker-nextjs/
+awas-dbd/
 ├── app/                          # Next.js App Router
 │   ├── components/               # Reusable components
-│   │   ├── Navbar.tsx           # Navigation bar
+│   │   ├── Navbar.tsx           # Navigation bar with role-based menu
 │   │   ├── Stepper.tsx          # Progress indicator
 │   │   ├── InputChoice.tsx      # Checkbox group input
 │   │   ├── InputNum.tsx         # Number input
+│   │   ├── InputField.tsx       # Text input field
 │   │   ├── Question.tsx         # Question wrapper
-│   │   ├── LeafletMap.tsx       # Map component
-│   │   └── ...
+│   │   ├── QAWrapper.tsx        # Q&A wrapper component
+│   │   ├── LoginForm.tsx        # Login form component
+│   │   ├── SignUpForm.tsx       # Sign up form component
+│   │   ├── AuthButton.tsx       # Authentication button
+│   │   ├── PlotlyChart.tsx      # Plotly chart component
+│   │   ├── RechartsHeatmap.tsx  # Recharts heatmap component
+│   │   └── PasswordStrengthIndicator.tsx
 │   ├── about/                    # About page
-│   ├── form/                     # Multi-step form
-│   ├── history/                  # Examination history
+│   ├── admin/                    # Admin section
+│   │   ├── dashboard/           # Admin dashboard
+│   │   └── articles/            # Article management
+│   ├── articles/                 # Public articles page
+│   ├── auth/                     # Auth pages
+│   │   └── error/               # Auth error page
+│   ├── checklist/                # Checklist page
+│   ├── form/                     # Multi-step examination form
+│   ├── history/                  # Examination history with PDF export
+│   │   └── [id]/                # Individual history detail
 │   ├── login/                    # Login page
+│   ├── profile/                  # User profile (edit form)
 │   ├── register/                 # Register page
 │   ├── result/                   # Result page
-│   ├── page.tsx                  # Homepage
+│   ├── page.tsx                  # Homepage with map
 │   ├── layout.tsx                # Root layout
+│   ├── globals.css               # Global styles
 │   └── not-found.tsx             # 404 page
 ├── lib/                          # Utilities & logic
-│   ├── model.ts                  # ML models & prediction
-│   └── dengue-service.ts         # Supabase services
+│   ├── model.ts                  # ML models & prediction (Logistic Regression, SVM)
+│   └── dengue-service.ts         # Supabase services (CRUD operations)
 ├── utils/                        # Utility functions
-│   └── supabase/                 # Supabase clients
-├── public/                       # Static assets
-│   ├── images/                   # Images
-│   ├── icons/                    # SVG icons
-│   └── heatmap_geo.json         # Map data
+│   └── supabase/                 # Supabase clients (client & server)
 ├── types/                        # TypeScript types
+├── public/                       # Static assets
+│   ├── dengue.png               # App logo
+│   └── heatmap_geo.json         # Map data for Indonesia
+├── middleware.ts                 # Next.js middleware for auth
+├── supabase_role_setup.sql      # Complete database setup script
 ├── .env.local                    # Environment variables (create this)
-└── package.json                  # Dependencies
+├── package.json                  # Dependencies
+└── tsconfig.json                 # TypeScript config
 ```
 
 ---
@@ -521,11 +416,7 @@ Project ini dilisensikan di bawah MIT License - lihat file [LICENSE](LICENSE) un
 
 ## 👥 Tim Pengembang
 
-Dibuat oleh mahasiswa Universitas Teknologi Yogyakarta:
-
-- **Alie Pratama** - Full Stack Developer
-- **Zakki Farian** - Machine Learning Engineer  
-- **Ridho Lestari** - UI/UX Designer & Developer
+Dibuat oleh mahasiswa Universitas Teknologi Yogyakarta
 
 ---
 
@@ -548,5 +439,5 @@ Aplikasi ini **BUKAN** pengganti diagnosis medis profesional. Hasil prediksi han
 
 <div align="center">
   <p>Made with ❤️ for Indonesian Healthcare</p>
-  <p>© 2025 Dengue Checker - Universitas Teknologi Yogyakarta</p>
+  <p>© 2025 Awas DBD - Universitas Teknologi Yogyakarta</p>
 </div>
