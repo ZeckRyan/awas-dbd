@@ -1,4 +1,4 @@
-# Dengue Checker 🦟
+# Awas DBD🦟
 
 <div align="center">
   <img src="public/dengue.png" alt="Dengue Checker Logo" width="120"/>
@@ -17,7 +17,7 @@
 
 ## 📖 Tentang Aplikasi
 
-**Dengue Checker** adalah aplikasi web yang dirancang untuk membantu masyarakat Indonesia melakukan deteksi dini Demam Berdarah Dengue (DBD) secara mandiri. Dengan memanfaatkan algoritma Machine Learning seperti **Logistic Regression** dan **Support Vector Machine (SVM)**, aplikasi ini dapat memprediksi kemungkinan seseorang terkena DBD berdasarkan gejala klinis dan hasil laboratorium.
+**Dengue Checker** adalah aplikasi web yang dirancang untuk membantu masyarakat Indonesia melakukan deteksi dini Demam Berdarah Dengue (DBD) secara mandiri. Dengan memanfaatkan algoritma Machine Learning seperti **Support Vector Machine (SVM)**, aplikasi ini dapat memprediksi kemungkinan seseorang terkena DBD berdasarkan gejala klinis dan hasil laboratorium.
 
 ### 🎯 Manfaat Aplikasi
 
@@ -52,11 +52,6 @@
 - **Step 2**: Gejala Tambahan (8 gejala klinis)
 - **Step 3**: Hasil Uji Laboratorium (WBC, Hemoglobin, Hematokrit, Platelet)
 - Progress indicator untuk tracking pengisian
-
-### 📊 Visualisasi Data
-- Peta interaktif sebaran kasus DBD di Indonesia
-- Heatmap geografis dengan Leaflet & Plotly
-- Real-time data visualization
 
 ### 👤 Sistem Autentikasi
 - Login dengan email/password atau Google OAuth
